@@ -107,7 +107,5 @@ def obtener_precio_dolar():
         return 1 / tasa
     except:
         return 1.0
-        return 1 / tasa
-    except:
-        return 1.0
+
 
