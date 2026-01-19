@@ -199,29 +199,34 @@ with st.sidebar:
     st.markdown("") 
     st.markdown("¿Te ha sido útil?")
     
-    # TRUCO HTML: Botón que fuerza abrir el navegador externo
-    # Nota: He puesto tu enlace https://paypal.me/JulenCorralLop
-    st.markdown(
-        """
-        <a href="https://paypal.me/JulenCorralLop" target="_blank" style="text-decoration: none;">
-            <div style="
-                width: 100%;
-                background-color: #FF4B4B;
-                color: white;
-                padding: 10px;
-                border-radius: 5px;
-                text-align: center;
-                font-weight: bold;
-                border: 1px solid #FF4B4B;">
-                ☕ Invítame a un café
-            </div>
-        </a>
-        """,
-        unsafe_allow_html=True
-    )
+import streamlit.components.v1 as components
+
+with st.sidebar:
+    st.markdown("---")
+    st.markdown("### 👨‍💻 Sobre el Proyecto")
+    
+    # Este bloque crea un botón que interactúa mejor con Android
+    html_boton = """
+    <script>
+    function abrirPaypal() {
+        window.open("https://paypal.me/JulenCorralLop", "_system");
+    }
+    </script>
+    <button onclick="abrirPaypal()" style="
+        width: 100%;
+        background-color: #FF4B4B;
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;">
+        ☕ Invítame a un café
+    </button>
+    """
+    components.html(html_boton, height=70)
     
     st.caption("v2.5.0 - Stable Release")
-    
-    st.caption("v2.5.0 - Stable Release")
+
 
 
