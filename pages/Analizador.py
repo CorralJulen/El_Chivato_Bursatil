@@ -9,7 +9,7 @@ import graficos
 st.set_page_config(page_title="Analizador Pro", page_icon="📊", layout="wide")
 
 # ==============================================================================
-# 🎨 ESTILOS CSS (SOLO ESTÉTICA, NO TOCA LÓGICA)
+# 🎨 ESTILOS CSS (ESTÉTICA APP FINTECH)
 # ==============================================================================
 st.markdown("""
 <style>
@@ -39,7 +39,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 1. GESTIÓN DE MEMORIA (ORIGINAL) ---
+# --- 1. GESTIÓN DE MEMORIA ---
 if 'busqueda_activa' not in st.session_state:
     st.session_state['busqueda_activa'] = None
 
@@ -63,7 +63,7 @@ with st.container():
     with col_izq:
         st.subheader("📡 Escáner General")
         st.write("Analiza las 60 empresas vigiladas.")
-        # LÓGICA ORIGINAL: Botón que limpia la búsqueda y activa el ranking
+        # Botón Ranking
         boton_ranking = st.button("🔄 Generar Ranking Completo", type="primary", use_container_width=True, on_click=activar_ranking)
 
     with col_der:
@@ -71,7 +71,7 @@ with st.container():
         st.write("Busca por nombre o ticker (Ej: Amadeus, Amazon...)")
         
         c1, c2 = st.columns([3, 1])
-        # LÓGICA ORIGINAL: Input y Botón
+        # Input y Botón
         texto_input = c1.text_input("Empresa", placeholder="Ej: Inditex", label_visibility="collapsed")
         if c2.button("BUSCAR", use_container_width=True):
             if texto_input:
@@ -84,7 +84,7 @@ with st.container():
 st.write("") # Espacio
 
 # ==============================================================================
-# ESCENARIO A: BÚSQUEDA INDIVIDUAL (LÓGICA ORIGINAL RESTAURADA)
+# ESCENARIO A: BÚSQUEDA INDIVIDUAL (CON TEXTO IA PRO RESTAURADO)
 # ==============================================================================
 if st.session_state['busqueda_activa']:
     
@@ -94,14 +94,14 @@ if st.session_state['busqueda_activa']:
     
     st.header(f"📑 Informe: {nombre_bonito}")
     
-    with st.spinner("Analizando mercado..."):
+    with st.spinner("Analizando mercado a fondo..."):
         df_hist = datos.descargar_datos([ticker_encontrado])
         
     if df_hist.empty:
         st.error(f"❌ No he encontrado datos para '{ticker_encontrado}'.")
     else:
         try:
-            # CÁLCULOS (INTACTOS)
+            # CÁLCULOS
             nota_num, desglose = analisis_fundamental.analizar_calidad_fundamental(ticker_encontrado)
             estado_tec, mensaje_tec, precio, vol = calculos.analizar_semaforo(df_hist, ticker_encontrado)
             
@@ -112,7 +112,7 @@ if st.session_state['busqueda_activa']:
                 moneda = "USD (Conv)"
 
             # Colores
-            color_nota = "red" # Fallback
+            color_nota = "red" 
             if estado_tec == "VERDE":
                 if nota_num >= 8: color_nota = "#27AE60" # Verde
                 elif nota_num >= 5: color_nota = "#F39C12" # Naranja
@@ -120,7 +120,7 @@ if st.session_state['busqueda_activa']:
             elif estado_tec == "NARANJA": color_nota = "#F39C12"
             else: color_nota = "#E74C3C"
 
-            # --- VISUALIZACIÓN (ESTILO NUEVO, DATOS VIEJOS) ---
+            # --- VISUALIZACIÓN ---
             with st.container():
                 st.markdown("<div style='background-color: white; padding: 15px; border-radius: 10px; border: 1px solid #eee; margin-bottom: 20px;'>", unsafe_allow_html=True)
                 kpi1, kpi2, kpi3 = st.columns(3)
@@ -149,24 +149,41 @@ if st.session_state['busqueda_activa']:
 
             with t_col:
                 st.markdown("<div style='background-color: white; padding: 15px; border-radius: 10px; border: 1px solid #eee;'>", unsafe_allow_html=True)
-                st.subheader("📝 Análisis IA")
+                st.subheader("📝 Análisis del Experto IA")
                 
-                # TEXTO ORIGINAL RECUPERADO
-                txt_tec = f"**Técnico:** Tendencia **{estado_tec}**. {mensaje_tec}. "
-                if vol > 0.025: txt_tec += f"⚠️ Alta volatilidad ({vol*100:.1f}%)."
-                else: txt_tec += f"Volatilidad normal ({vol*100:.1f}%)."
-                
-                txt_fund = f"\n\n**Fundamental:** Solidez **{nota_num}/10**."
-                if "✅" in str(desglose.get("Rentabilidad", "")): txt_fund += " Alta Rentabilidad."
-                if "💰" in str(desglose.get("Dividendos", "")): txt_fund += " Paga Dividendos."
+                # --- REDACCIÓN AUTOMÁTICA PRO (RESTAURADA) ---
+                txt_tecnico = f"**Técnicamente**, la acción presenta una tendencia **{estado_tec}**. {mensaje_tec}. "
+                if vol > 0.025:
+                    txt_tecnico += f"⚠️ Atención a su **alta volatilidad** ({vol*100:.1f}%), riesgo elevado."
+                else:
+                    txt_tecnico += f"Muestra una volatilidad estable ({vol*100:.1f}%)."
 
-                st.markdown(txt_tec + txt_fund)
+                txt_fund = f"\n\n**Fundamentalmente**, la solidez es de **{nota_num}/10**."
                 
-                if color_nota == "#27AE60": st.success("✅ COMPRAR")
-                elif color_nota == "#F39C12": st.warning("⚠️ PRECAUCIÓN")
-                else: st.error("⛔ NO INVERTIR")
+                # Lógica detallada de texto
+                if "✅" in str(desglose.get("Rentabilidad", "")):
+                    txt_fund += " Destaca por su alta capacidad de generar beneficios."
+                elif "❌" in str(desglose.get("Rentabilidad", "")):
+                    txt_fund += " Preocupa que está en pérdidas."
                 
-                st.caption("Detalles:")
+                if "⚠️" in str(desglose.get("Valoración (PER)", "")):
+                    txt_fund += " El precio parece caro respecto a beneficios."
+
+                if "💰" in str(desglose.get("Dividendos", "")):
+                    txt_fund += " Paga dividendos interesantes."
+
+                st.markdown(txt_tecnico + txt_fund)
+                
+                # Conclusión visual
+                if color_nota == "#27AE60":
+                    st.success("🏆 **OPORTUNIDAD CLARA.** Compra recomendada.")
+                elif color_nota == "#F39C12":
+                    st.warning("⚠️ **MANTENER / PRECAUCIÓN.**")
+                else:
+                    st.error("⛔ **NO INVERTIR AHORA.**")
+
+                st.markdown("---")
+                st.caption("Detalles fundamentales:")
                 st.dataframe(pd.DataFrame(list(desglose.items()), columns=["Ratio", "Valor"]), hide_index=True)
                 st.markdown("</div>", unsafe_allow_html=True)
                 
@@ -174,7 +191,7 @@ if st.session_state['busqueda_activa']:
             st.error(f"Error al procesar los datos: {e}")
 
 # ==============================================================================
-# ESCENARIO B: RANKING GENERAL (LÓGICA ORIGINAL RESTAURADA)
+# ESCENARIO B: RANKING GENERAL (AHORA CON 3 PESTAÑAS)
 # ==============================================================================
 elif boton_ranking:
     st.info("📡 Escaneando mercados de España y EEUU...")
@@ -226,10 +243,7 @@ elif boton_ranking:
                     else: item["Motivo"] = "Fundamentales débiles"; naranjas.append(item)
                 else: naranjas.append(item)
             except: 
-                # Si falla, no rompemos, solo ponemos datos por defecto
-                item["Nota"] = "N/A"
-                item["Puntuacion"] = 0
-                naranjas.append(item)
+                item["Nota"] = "N/A"; item["Puntuacion"] = 0; naranjas.append(item)
 
         barra2.empty()
         
@@ -237,7 +251,7 @@ elif boton_ranking:
         verdes.sort(key=lambda x: x["Puntuacion"], reverse=True)
         naranjas.sort(key=lambda x: x["Puntuacion"], reverse=True)
         
-        # FUNCIÓN DE TABLA (ORIGINAL CON TOP 5/10)
+        # FUNCIÓN DE TABLA (ORIGINAL)
         def mostrar_tabla(lista, limite=None):
             if not lista: 
                 st.write("Sin datos.")
@@ -246,26 +260,27 @@ elif boton_ranking:
             if limite: df = df[:limite]
             
             cols_ver = ["Empresa", "Precio", "Nota", "Valoración (PER)", "Rentabilidad", "Dividendos", "Deuda"]
-            # Filtro de seguridad por si falta alguna columna
             cols_finales = [c for c in cols_ver if c in df.columns]
             st.dataframe(df[cols_finales], use_container_width=True, hide_index=True)
 
-        # --- MOSTRAR RESULTADOS (ESTRUCTURA ORIGINAL RECUPERADA) ---
+        # --- MOSTRAR RESULTADOS (CON 3 TABS) ---
         with st.container():
             st.markdown("<div style='background-color: white; padding: 20px; border-radius: 10px; border: 1px solid #eee;'>", unsafe_allow_html=True)
             
             st.success(f"🟢 OPORTUNIDADES ({len(verdes)})")
             if verdes:
-                # AQUÍ ESTÁN TUS TABS DE NUEVO
-                t1, t2 = st.tabs(["Top 5", "Top 10"])
+                # AQUÍ ESTÁN LAS 3 PESTAÑAS QUE PEDISTE
+                t1, t2, t3 = st.tabs(["Top 5", "Top 10", "Lista Completa"])
                 with t1: mostrar_tabla(verdes, 5)
                 with t2: mostrar_tabla(verdes, 10)
+                with t3: mostrar_tabla(verdes, None) # None = Sin límite
                 
             st.warning(f"🟠 RIESGO / MIXTO ({len(naranjas)})")
             if naranjas:
-                t3, t4 = st.tabs(["Top 5", "Top 10"])
-                with t3: mostrar_tabla(naranjas, 5)
-                with t4: mostrar_tabla(naranjas, 10)
+                t4, t5, t6 = st.tabs(["Top 5", "Top 10", "Lista Completa"])
+                with t4: mostrar_tabla(naranjas, 5)
+                with t5: mostrar_tabla(naranjas, 10)
+                with t6: mostrar_tabla(naranjas, None)
                 
             st.error(f"❌ EVITAR ({len(lista_roja)})")
             if lista_roja: 
