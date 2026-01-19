@@ -56,7 +56,7 @@ El código sigue una arquitectura modular para facilitar el mantenimiento:
 
 ## 🤖 Transparencia y Autoría
 
-Este proyecto ha sido desarrollado por **[Julen Corral]** como Proyecto Final de Python.
+Este proyecto ha sido desarrollado por **Julen Corral** como Proyecto Final de Python.
 
 **Nota sobre el uso de Inteligencia Artificial:**
 Este software ha sido creado utilizando **Inteligencia Artificial Generativa (LLMs)** como herramienta de apoyo al desarrollo (*AI-Assisted Development*). La IA ha actuado como "Copiloto" o tutor virtual para:
@@ -68,4 +68,5 @@ Este software ha sido creado utilizando **Inteligencia Artificial Generativa (LL
 La lógica de negocio, la selección de estrategias de inversión y la arquitectura final han sido supervisadas y validadas por mí.
 
 ---
+
 *Datos financieros proporcionados por Yahoo Finance. Proyecto con fines educativos, no constituye asesoramiento financiero real.*
