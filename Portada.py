@@ -191,10 +191,6 @@ st.caption("© 2023-2024 El Chivato Bursátil AI Platforms. v2.5.0-stable. Power
 # --- AÑADIR AL FINAL DE CADA ARCHIVO .PY ---
 
 # --- Sustiuye el bloque anterior por este ---
-with st.sidebar:
-    st.markdown("---")
-    st.markdown("### 👨‍💻 Sobre el Proyecto")
-    st.caption("Desarrollado con ❤️ usando Python y Streamlit.")
   
 with st.sidebar:
     st.markdown("---")
@@ -208,6 +204,7 @@ with st.sidebar:
     st.markdown(f"👉 [paypal.me/JulenCorralLop](https://paypal.me/JulenCorralLop)")
     
     st.caption("v2.5.0 - Stable Release")
+
 
 
 
