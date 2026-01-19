@@ -195,38 +195,20 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 👨‍💻 Sobre el Proyecto")
     st.caption("Desarrollado con ❤️ usando Python y Streamlit.")
-    
-    st.markdown("") 
-    st.markdown("¿Te ha sido útil?")
-    
-import streamlit.components.v1 as components
-
+  
 with st.sidebar:
     st.markdown("---")
     st.markdown("### 👨‍💻 Sobre el Proyecto")
+    st.caption("Herramienta gratuita de análisis financiero.")
     
-    # Este bloque crea un botón que interactúa mejor con Android
-    html_boton = """
-    <script>
-    function abrirPaypal() {
-        window.open("https://paypal.me/JulenCorralLop", "_system");
-    }
-    </script>
-    <button onclick="abrirPaypal()" style="
-        width: 100%;
-        background-color: #FF4B4B;
-        color: white;
-        padding: 12px;
-        border-radius: 8px;
-        border: none;
-        font-weight: bold;
-        cursor: pointer;">
-        ☕ Invítame a un café
-    </button>
-    """
-    components.html(html_boton, height=70)
+    st.markdown("❤️ **¿Te gusta la app?**")
+    st.write("Si este chivato te parece buen trabajo, puedes apoyarme invitándome a un café:")
+    
+    # Enlace directo pero con nombre limpio
+    st.markdown(f"👉 [paypal.me/JulenCorralLop](https://paypal.me/JulenCorralLop)")
     
     st.caption("v2.5.0 - Stable Release")
+
 
 
 
