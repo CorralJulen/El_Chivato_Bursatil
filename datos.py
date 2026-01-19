@@ -29,7 +29,6 @@ NOMBRES = {
 EMPRESAS_SELECCIONADAS = list(NOMBRES.keys())
 
 def encontrar_ticker(texto_busqueda):
-    """Intenta adivinar el Ticker basándose en el nombre."""
     texto = texto_busqueda.strip().upper()
     if texto in EMPRESAS_SELECCIONADAS: return texto
     for ticker, nombre in NOMBRES.items():
@@ -38,62 +37,77 @@ def encontrar_ticker(texto_busqueda):
 
 def descargar_datos(tickers):
     """
-    Descarga España y EEUU asegurando que las columnas tengan el nombre del Ticker.
+    Descarga robusta que maneja Series, DataFrames y MultiIndex.
     """
-    print(f"📡 Iniciando descarga segura para: {tickers}")
+    if not tickers: return pd.DataFrame()
     
+    print(f"📡 Descargando: {tickers}")
+    
+    # Separamos listas para evitar conflictos de moneda/mercado
     lista_es = [t for t in tickers if ".MC" in t]
     lista_us = [t for t in tickers if ".MC" not in t]
     
     df_final = pd.DataFrame()
 
-    def procesar_descarga(lista):
-        if not lista: return pd.DataFrame()
+    def procesar(lista_tickers):
+        if not lista_tickers: return pd.DataFrame()
         try:
-            # Descargamos
-            datos = yf.download(lista, period="1y", progress=False, auto_adjust=True)
+            # Forzamos descarga como grupo
+            datos = yf.download(lista_tickers, period="1y", auto_adjust=True, progress=False)
             
-            # Extraemos solo el cierre ('Close')
-            if 'Close' in datos.columns:
-                df = datos['Close']
+            # Caso 1: Yahoo devuelve MultiIndex (Price, Ticker)
+            if isinstance(datos.columns, pd.MultiIndex):
+                try:
+                    df = datos['Close'] # Intentamos coger solo cierre
+                except KeyError:
+                    # Si falla, a veces la columna se llama diferente o no hay MultiIndex claro
+                    df = datos
+            # Caso 2: Index simple (Open, Close, etc.) - Típico de 1 sola empresa
+            elif 'Close' in datos.columns:
+                df = datos[['Close']] # Lo mantenemos como DataFrame
             else:
-                df = datos # Por si acaso ya viene directo
+                df = datos # Fallback
             
-            # CORRECCIÓN DE COLUMNAS (La parte importante)
-            # Si es una Serie (1 sola empresa), la convertimos a DataFrame y le ponemos su nombre
-            if isinstance(df, pd.Series):
-                df = df.to_frame()
-                df.columns = lista # Forzamos que la columna se llame 'BBVA.MC' y no 'Close'
-            
-            # Si es un DataFrame de 1 sola columna pero se llama 'Close'
-            elif isinstance(df, pd.DataFrame) and len(df.columns) == 1 and len(lista) == 1:
-                df.columns = lista
+            # --- LIMPIEZA CRÍTICA ---
+            # Si descargamos 1 sola empresa, Yahoo a veces no pone el nombre del Ticker en la columna.
+            # Aquí lo forzamos manualmente.
+            if len(lista_tickers) == 1:
+                # Si es una Serie, la convertimos
+                if isinstance(df, pd.Series):
+                    df = df.to_frame()
                 
+                # Si tiene 1 columna, le ponemos el nombre del ticker SÍ o SÍ.
+                if df.shape[1] == 1:
+                    df.columns = lista_tickers
+                    
             return df
         except Exception as e:
-            print(f"Error descargando {lista}: {e}")
+            print(f"⚠️ Error en descarga parcial {lista_tickers}: {e}")
             return pd.DataFrame()
 
-    # Procesamos ambas listas
-    df_es = procesar_descarga(lista_es)
-    df_us = procesar_descarga(lista_us)
+    # Ejecutamos
+    df_es = procesar(lista_es)
+    df_us = procesar(lista_us)
     
     # Unimos
     if not df_es.empty:
         df_final = pd.concat([df_final, df_es], axis=1)
     if not df_us.empty:
         df_final = pd.concat([df_final, df_us], axis=1)
-
-    # Limpieza de fechas
+        
+    # Limpiar Zona Horaria (Causa común de fallos en gráficos)
     if not df_final.empty:
         df_final.index = df_final.index.tz_localize(None)
         
     return df_final
 
 def obtener_precio_dolar():
-    """Devuelve cuánto vale 1 Dólar en Euros."""
     try:
         tasa = yf.Ticker("EURUSD=X").history(period="1d")['Close'].iloc[-1]
         return 1 / tasa
     except:
         return 1.0
+        return 1 / tasa
+    except:
+        return 1.0
+
