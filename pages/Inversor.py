@@ -228,18 +228,14 @@ with st.sidebar:
 with st.sidebar:
     st.markdown("---")
     st.markdown("### 👨‍💻 Sobre el Proyecto")
-    st.caption("Desarrollado con ❤️ usando Python y Streamlit.")
+    st.caption("Herramienta gratuita de análisis financiero.")
     
-    st.markdown("") # Espacio vertical
+    st.markdown("❤️ **¿Te gusta la app?**")
+    st.write("Si este chivato te parece buen trabajo, puedes apoyarme invitándome a un café:")
     
-    # Tu botón real de PayPal
-    st.markdown("¿Te ha sido útil?")
-    st.link_button(
-        label="☕ Invítame a un café", 
-        url="https://paypal.me/JulenCorralLop", # <--- TU ENLACE YA PUESTO
-        type="primary", 
-        use_container_width=True
-    )
+    # Enlace directo pero con nombre limpio
+    st.markdown(f"👉 [paypal.me/JulenCorralLop](https://paypal.me/JulenCorralLop)")
     
     st.caption("v2.5.0 - Stable Release")
+
 
