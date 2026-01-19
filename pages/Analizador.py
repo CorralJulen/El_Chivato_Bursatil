@@ -287,3 +287,24 @@ elif boton_ranking:
                 st.dataframe(pd.DataFrame(lista_roja)[["Empresa", "Motivo"]], use_container_width=True, hide_index=True)
             
             st.markdown("</div>", unsafe_allow_html=True)
+
+# --- AÑADIR AL FINAL DE CADA ARCHIVO .PY ---
+
+# Barra lateral con información del desarrollador y donaciones
+with st.sidebar:
+    st.markdown("---")
+    st.markdown("### 👨‍💻 Sobre el Proyecto")
+    st.caption("Desarrollado con ❤️ usando Python y Streamlit.")
+    
+    st.markdown("") # Espacio
+    
+    # Botón de Donación Estilizado
+    st.markdown("¿Te ha sido útil?")
+    st.link_button(
+        label="☕ Invítame a un café", 
+        url="https://www.paypal.com/paypalme/TU_USUARIO", # <--- PON AQUÍ TU LINK REAL (PayPal o Ko-fi)
+        type="primary", 
+        use_container_width=True
+    )
+    
+    st.caption("v2.5.0 - Stable Release")
