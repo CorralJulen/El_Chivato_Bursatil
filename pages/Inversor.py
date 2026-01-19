@@ -5,208 +5,215 @@ import datos
 import calculos
 import analisis_fundamental
 
-# Configuración de página
-st.set_page_config(page_title="Robo-Advisor Pro", page_icon="🤖", layout="wide")
+# --- CONFIGURACIÓN INICIAL (Full Width) ---
+st.set_page_config(page_title="Inversor Pro | AI Wealth", page_icon="🏦", layout="wide")
 
 # ==============================================================================
-# 🎨 ZONA DE ESTILO (CSS INYECTADO)
+# 🎨 ESTILOS CSS "PREMIUM FINTECH"
 # ==============================================================================
 st.markdown("""
 <style>
-    /* 1. FONDO GENERAL */
+    /* 1. FONDO GLOBAL: Gris muy suave, típico de dashboards financieros */
     .stApp {
-        background-color: #f0f2f6;
-        background-image: url("https://www.transparenttextures.com/patterns/cubes.png");
-        background-blend-mode: overlay;
+        background-color: #F8F9FA;
     }
 
-    /* 2. ESTILO TARJETA PARA INPUTS */
-    div[data-testid="stVerticalBlock"] > div:has(div[data-testid="stNumberInput"]) {
-        background-color: rgba(255, 255, 255, 0.95);
-        padding: 25px;
-        border-radius: 15px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        border: 1px solid #e0e0e0;
+    /* 2. TARJETAS (Card UI): Fondo blanco, bordes redondeados, sombra suave */
+    .css-card {
+        background-color: #FFFFFF;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #E9ECEF;
         margin-bottom: 20px;
     }
 
-    /* 3. BOTÓN PRINCIPAL */
-    div.stButton > button:first-child {
-        background: linear-gradient(45deg, #2980b9, #6dd5fa);
-        color: white;
-        font-weight: bold;
-        border: none;
-        height: 50px;
-        font-size: 18px;
-        transition: all 0.3s ease;
-    }
-    div.stButton > button:first-child:hover {
-        transform: scale(1.02);
-        box-shadow: 0 6px 15px rgba(41, 128, 185, 0.4);
+    /* 3. TÍTULOS: Fuente moderna y colores oscuros */
+    h1, h2, h3 {
+        color: #1A1A1A;
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
     }
     
-    /* 4. TÍTULOS */
-    h1, h2, h3 {
-        color: #2c3e50;
-        font-family: 'Helvetica Neue', sans-serif;
+    /* 4. BOTÓN PRINCIPAL: Estilo "Comprar" / "Ejecutar" */
+    div.stButton > button:first-child {
+        background-color: #000000; /* Negro puro o azul corporativo */
+        color: white;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        border: none;
+        width: 100%;
+        transition: transform 0.2s;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #333333;
+        transform: translateY(-2px);
+    }
+
+    /* 5. METRICAS: Estilo limpio */
+    div[data-testid="stMetricValue"] {
+        font-size: 28px;
+        color: #2E86C1;
     }
 </style>
 """, unsafe_allow_html=True)
 
-
 # ==============================================================================
-# 🏠 CABECERA Y TÍTULO
+# 🏦 CABECERA TIPO "APP"
 # ==============================================================================
-# --- CORRECCIÓN AQUÍ: Hemos quitado 'height=200' que daba error ---
-# Hemos añadido '&h=300' a la URL para que Unsplash nos la dé ya recortada
-st.image(
-    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=2070&h=300&q=80",
-    use_container_width=True
-)
-
-st.title("🤖 El Inversor Inteligente")
-st.markdown("""
-<div style='background-color: rgba(255,255,255,0.7); padding: 10px; border-radius: 10px;'>
-    Algoritmo de <b>Asignación de Activos</b>. Define tu perfil y distribuiremos tu capital 
-    siguiendo estrictas reglas de <b>Calidad Fundamental y Control de Riesgo</b>.
-</div>
-""", unsafe_allow_html=True)
-
-st.write("") # Espacio
-
-# ==============================================================================
-# 🎛️ ZONA DE CONFIGURACIÓN (ESTILO TARJETA)
-# ==============================================================================
-st.subheader("💼 Configura tu Inversión")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    capital = st.number_input("💰 Capital a invertir (€)", min_value=500.0, value=10000.0, step=100.0)
-
-with col2:
-    perfil = st.selectbox(
-        "🧠 Perfil de Riesgo",
-        options=["🐢 Conservador", "⚖️ Moderado", "🚀 Arriesgado"]
-    )
-
-# --- AVISOS DINÁMICOS ---
-if "Arriesgado" in perfil:
-    st.warning("⚠️ **¡ATENCIÓN!** Perfil de Alto Riesgo. Priorizaremos volatilidad alta. Existe riesgo de pérdida.")
-else:
-    st.info("ℹ️ **Estrategia Segura:** Selección basada en Tendencia Alcista (Técnico) y Solidez (Fundamental).")
-
-st.write("") 
-
-# --- BOTÓN DE ACCIÓN ---
-boton_generar = st.button("✨ GENERAR CARTERA OPTIMIZADA", type="primary", use_container_width=True)
+# Usamos columnas para poner Logo/Título a la izquierda y quizás usuario a la derecha
+c_head1, c_head2 = st.columns([3, 1])
+with c_head1:
+    st.title("🏦 AI Wealth Manager")
+    st.caption("Gestión Patrimonial Automatizada • Algoritmo v2.4")
 
 st.markdown("---")
 
 # ==============================================================================
-# 🚀 LÓGICA PRINCIPAL
+# 🎛️ PANEL DE CONTROL (DENTRO DE UNA "TARJETA")
+# ==============================================================================
+# Creamos un contenedor visual simulando una tarjeta
+with st.container():
+    st.markdown("<div style='background-color: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee;'>", unsafe_allow_html=True)
+    
+    st.subheader("⚙️ Configuración de Cartera")
+    
+    c1, c2, c3 = st.columns([2, 2, 1])
+    
+    with c1:
+        # Input con formato de moneda
+        capital = st.number_input("Capital Inicial (€)", min_value=1000.0, value=10000.0, step=500.0, format="%.2f")
+    
+    with c2:
+        perfil = st.selectbox("Perfil de Inversor", ["🐢 Conservador (Bajo Riesgo)", "⚖️ Moderado (Equilibrado)", "🚀 Dinámico (Alto Rendimiento)"])
+    
+    with c3:
+        st.write(" ") # Espacio para alinear el botón
+        st.write(" ")
+        boton_generar = st.button("🚀 GENERAR ESTRATEGIA")
+        
+    # Feedback visual inmediato del perfil
+    if "Dinámico" in perfil:
+        st.caption("⚠️ **Aviso de Riesgo:** Este perfil prioriza el crecimiento sobre la seguridad. Volatilidad esperada: Alta.")
+    else:
+        st.caption("✅ **Perfil Seguro:** Priorizamos preservación de capital y empresas sólidas (Blue Chips).")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+st.write("") # Espacio separador
+
+# ==============================================================================
+# 📊 RESULTADOS (SECCIÓN DASHBOARD)
 # ==============================================================================
 if boton_generar:
     
-    st.write(f"### 📡 Diseñando cartera para perfil: **{perfil}**")
-    
-    # 1. Definición de Porcentajes
-    if "Conservador" in perfil:
-        pct_seguras, pct_medias, pct_picantes = 0.80, 0.20, 0.00
-    elif "Moderado" in perfil:
-        pct_seguras, pct_medias, pct_picantes = 0.60, 0.40, 0.00
-    else: # Arriesgado
-        pct_seguras, pct_medias, pct_picantes = 0.20, 0.40, 0.40
-
-    # 2. Descarga
-    try:
-        with st.spinner("Conectando con mercados globales y analizando datos..."):
+    # Simulación de carga "profesional"
+    with st.spinner("🔄 Conectando con mercados globales (NYSE, NASDAQ, BME)..."):
+        try:
             df_todos = datos.descargar_datos(datos.EMPRESAS_SELECCIONADAS)
             factor_eur = datos.obtener_precio_dolar()
-    except:
-        st.error("Error de conexión con el mercado."); st.stop()
-        
-    barra = st.progress(0)
-    todos_los_candidatos = []; cubo_seguras = []; cubo_medias = []; cubo_picantes = []  
-    UMBRAL_BAJO = 0.010; UMBRAL_ALTO = 0.015
+        except: st.error("Error de conexión API."); st.stop()
 
-    for i, ticker in enumerate(datos.EMPRESAS_SELECCIONADAS):
-        barra.progress((i+1)/len(datos.EMPRESAS_SELECCIONADAS))
+    # --- LÓGICA DE NEGOCIO (Igual que antes, pero más limpia) ---
+    todos = []
+    # Definimos porcentajes según perfil
+    if "Conservador" in perfil: p_seg, p_mod, p_risk = 0.8, 0.2, 0.0
+    elif "Moderado" in perfil:    p_seg, p_mod, p_risk = 0.6, 0.4, 0.0
+    else:                         p_seg, p_mod, p_risk = 0.2, 0.4, 0.4
+    
+    # Procesamiento rápido
+    for t in datos.EMPRESAS_SELECCIONADAS:
         try:
-            estado, _, precio, vol = calculos.analizar_semaforo(df_todos, ticker)
-            if estado != "VERDE": continue
-            nota, _ = analisis_fundamental.analizar_calidad_fundamental(ticker)
-            precio_eur = precio * factor_eur if not ticker.endswith(".MC") else precio
-            
-            item = {"Empresa": datos.NOMBRES.get(ticker, ticker), "Precio": precio_eur, "Nota": nota, "Volatilidad": vol}
-            todos_los_candidatos.append(item)
-            
-            if nota >= 7 and vol <= UMBRAL_BAJO: cubo_seguras.append(item)
-            elif nota >= 7 and UMBRAL_BAJO < vol <= UMBRAL_ALTO: cubo_medias.append(item)
-            elif vol > UMBRAL_ALTO: cubo_picantes.append(item)
+            est, _, prec, vol = calculos.analizar_semaforo(df_todos, t)
+            if est == "VERDE":
+                nota, _ = analisis_fundamental.analizar_calidad_fundamental(t)
+                precio_e = prec * factor_eur if not t.endswith(".MC") else prec
+                todos.append({"T": t, "E": datos.NOMBRES.get(t, t), "P": precio_e, "N": nota, "V": vol})
         except: pass
-    barra.empty()
-    
-    # --- 3. REPARTO ---
-    cartera_final = []
-    LABEL_SEGURIDAD = "🛡️ Seguridad (Nota>7)"
-    LABEL_EQUILIBRIO = "⚖️ Equilibrio (Nota>7)"
-    LABEL_RIESGO = "🔥 Riesgo (Volatilidad Alta)"
-    
-    def repartir_en_cubo(lista_candidatos, porcentaje_capital, nombre_bloque):
-        if porcentaje_capital == 0: return
-        dinero_disponible = capital * porcentaje_capital
-        
-        # Fallback
-        if not lista_candidatos:
-            if "Riesgo" in nombre_bloque:
-                st.warning(f"⚠️ Mercado parado. Usando las más volátiles disponibles para Riesgo.")
-                lista_candidatos = sorted(todos_los_candidatos, key=lambda x: x["Volatilidad"], reverse=True)[:3]
-            elif "Equilibrio" in nombre_bloque and cubo_seguras: lista_candidatos = cubo_seguras
+
+    # Clasificación en cubos
+    c_seg = [x for x in todos if x["N"] >= 7 and x["V"] <= 0.01]
+    c_mod = [x for x in todos if x["N"] >= 7 and 0.01 < x["V"] <= 0.015]
+    c_rsk = [x for x in todos if x["V"] > 0.015]
+
+    # Función de reparto
+    cartera = []
+    def asignar(lista, pct, etiqueta):
+        if pct == 0: return
+        dinero = capital * pct
+        # Fallbacks básicos
+        if not lista:
+            if etiqueta == "Riesgo" and todos: lista = sorted(todos, key=lambda x: x["V"], reverse=True)[:3]
+            elif etiqueta == "Equilibrio" and c_seg: lista = c_seg
             else: return
-
-        # Ordenar
-        if "Riesgo" in nombre_bloque: lista_candidatos.sort(key=lambda x: x["Volatilidad"], reverse=True)
-        else: lista_candidatos.sort(key=lambda x: x["Nota"], reverse=True)
             
-        seleccion = lista_candidatos[:3]
+        seleccion = sorted(lista, key=lambda x: x["N"], reverse=True)[:3] if etiqueta != "Riesgo" else sorted(lista, key=lambda x: x["V"], reverse=True)[:3]
         if not seleccion: return
-
-        dinero_por_accion = dinero_disponible / len(seleccion)
-        for accion in seleccion:
-            num = int(dinero_por_accion / accion["Precio"])
-            if num < 1: num = 1
-            total = num * accion["Precio"]
-            cartera_final.append({
-                "Bloque": nombre_bloque, "Empresa": accion["Empresa"],
-                "Nota": f"{accion['Nota']}/10", "Volatilidad": f"{accion['Volatilidad']*100:.2f}%",
-                "Cantidad": num, "Total (€)": f"{total:.2f} €", "Total Inv.": total
-            })
-
-    repartir_en_cubo(cubo_seguras, pct_seguras, LABEL_SEGURIDAD)
-    repartir_en_cubo(cubo_medias, pct_medias, LABEL_EQUILIBRIO)
-    repartir_en_cubo(cubo_picantes, pct_picantes, LABEL_RIESGO)
-    
-    # --- 4. VISUALIZACIÓN ---
-    if cartera_final:
-        df_cartera = pd.DataFrame(cartera_final)
-        total_invertido = df_cartera["Total Inv."].sum()
         
-        st.success(f"✅ Cartera Generada. Inversión Total: {total_invertido:.2f} €")
+        dinero_acc = dinero / len(seleccion)
+        for a in seleccion:
+            n_acc = max(1, int(dinero_acc / a["P"]))
+            tot = n_acc * a["P"]
+            cartera.append({"Categoría": etiqueta, "Activo": a["E"], "Precio": a["P"], "Cantidad": n_acc, "Total": tot, "Calidad": a["N"]})
+
+    asignar(c_seg, p_seg, "🛡️ Preservación")
+    asignar(c_mod, p_mod, "⚖️ Crecimiento")
+    asignar(c_rsk, p_risk, "🔥 Especulativo")
+
+    # --- VISUALIZACIÓN TIPO "ECOMMERCE" ---
+    if cartera:
+        df_c = pd.DataFrame(cartera)
+        total_real = df_c["Total"].sum()
+        cash = capital - total_real
         
-        with st.container():
-            st.markdown("<div style='background-color: rgba(255,255,255,0.9); padding: 20px; border-radius: 15px;'>", unsafe_allow_html=True)
-            c1, c2 = st.columns([1, 2])
-            with c1:
-                st.subheader("Distribución Visual")
-                mapa_colores = {LABEL_SEGURIDAD: "#2ecc71", LABEL_EQUILIBRIO: "#f39c12", LABEL_RIESGO: "#e74c3c", "(?)": "#95a5a6"}
-                try:
-                    fig = px.sunburst(df_cartera, path=['Bloque', 'Empresa'], values='Total Inv.', color='Bloque', color_discrete_map=mapa_colores)
-                    st.plotly_chart(fig, use_container_width=True)
-                except: st.warning("Gráfico interactivo no disponible.")
-            with c2:
-                st.subheader("📋 Lista de la Compra")
-                st.dataframe(df_cartera[["Bloque", "Empresa", "Nota", "Volatilidad", "Cantidad", "Total (€)"]], use_container_width=True, hide_index=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+        # 1. TARJETAS DE MÉTRICAS (KPIs)
+        st.markdown("### 📊 Resumen de la Propuesta")
+        k1, k2, k3, k4 = st.columns(4)
+        k1.metric("Inversión Total", f"{total_real:,.2f} €")
+        k2.metric("Liquidez (Cash)", f"{cash:,.2f} €")
+        k3.metric("Activos", f"{len(df_c)}")
+        k4.metric("Calidad Media", f"{df_c['Calidad'].mean():.1f}/10")
+        
+        st.markdown("---")
+        
+        # 2. SECCIÓN VISUAL (GRÁFICO + TABLA DETALLADA)
+        g_col, t_col = st.columns([1, 2])
+        
+        with g_col:
+            # Gráfico de Donut limpio
+            fig = px.pie(df_c, values='Total', names='Categoría', hole=0.6, color='Categoría',
+                         color_discrete_map={"🛡️ Preservación":"#27AE60", "⚖️ Crecimiento":"#F39C12", "🔥 Especulativo":"#C0392B"})
+            fig.update_layout(showlegend=False, margin=dict(t=0, b=0, l=0, r=0), height=250)
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Nota central
+            st.markdown(f"<div style='text-align: center; color: gray;'>Diversificación por Estrategia</div>", unsafe_allow_html=True)
+
+        with t_col:
+            st.markdown("#### 🧾 Orden de Compra")
+            
+            # Formateamos la tabla para que parezca una factura
+            df_display = df_c.copy()
+            df_display["Precio"] = df_display["Precio"].apply(lambda x: f"{x:.2f} €")
+            df_display["Total"] = df_display["Total"].apply(lambda x: f"{x:.2f} €")
+            
+            st.dataframe(
+                df_display[["Categoría", "Activo", "Cantidad", "Precio", "Total"]],
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Categoría": st.column_config.TextColumn("Estrategia"),
+                    "Total": st.column_config.TextColumn("Importe Neto"),
+                }
+            )
+            
+            # Botón final de "simular compra"
+            st.button("📥 Descargar Informe PDF (Simulado)", type="secondary", use_container_width=True)
+
     else:
-        st.error("No se han encontrado acciones adecuadas hoy.")
+        st.warning("El algoritmo no ha encontrado oportunidades que cumplan sus criterios estrictos hoy.")
+
+else:
+    # MENSAJE DE BIENVENIDA LIMPIO
+    st.info("👋 Configure sus parámetros arriba y pulse 'Generar Estrategia' para comenzar.")
