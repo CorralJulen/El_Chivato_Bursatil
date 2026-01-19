@@ -9,7 +9,6 @@ st.set_page_config(page_title="Semáforo Pro", page_icon="🚦", layout="wide")
 st.title("🚦 Semáforo & Analizador Pro")
 
 # --- 1. GESTIÓN DE MEMORIA (EL CEREBRO DE LA PÁGINA) ---
-# Creamos la variable 'busqueda_activa' si no existe
 if 'busqueda_activa' not in st.session_state:
     st.session_state['busqueda_activa'] = None
 
@@ -36,7 +35,6 @@ with col_der:
     texto_input = c1.text_input("Empresa", placeholder="Ej: Inditex", label_visibility="collapsed")
     # Botón simple
     if c2.button("🔍 Buscar"):
-        # AQUÍ ESTÁ LA CLAVE: Si pulsas, guardamos el texto en la memoria a fuego
         if texto_input:
             st.session_state['busqueda_activa'] = texto_input
         else:
@@ -45,40 +43,33 @@ with col_der:
 st.markdown("---")
 
 # ==============================================================================
-# ESCENARIO A: HAY UNA BÚSQUEDA GUARDADA EN MEMORIA
+# ESCENARIO A: HAY UNA BÚSQUEDA GUARDADA (INDIVIDUAL)
 # ==============================================================================
 if st.session_state['busqueda_activa']:
     
-    # Recuperamos el nombre de la memoria
     texto_a_buscar = st.session_state['busqueda_activa']
     
-    # 1. Buscamos el Ticker oficial (Ej: Inditex -> ITX.MC)
     ticker_encontrado = datos.encontrar_ticker(texto_a_buscar)
     nombre_bonito = datos.NOMBRES.get(ticker_encontrado, ticker_encontrado)
     
     st.header(f"🔎 Informe: {nombre_bonito}")
     
-    # 2. Descargamos Datos
     with st.spinner("Analizando mercado..."):
         df_hist = datos.descargar_datos([ticker_encontrado])
         
-    # 3. Comprobamos si hay datos
     if df_hist.empty:
-        st.error(f"❌ No he encontrado datos para '{ticker_encontrado}'. Prueba con el Ticker exacto (ej: AAPL, BBVA.MC).")
+        st.error(f"❌ No he encontrado datos para '{ticker_encontrado}'. Prueba con el Ticker exacto.")
     else:
         try:
-            # 4. Realizamos los cálculos
             nota_num, desglose = analisis_fundamental.analizar_calidad_fundamental(ticker_encontrado)
             estado_tec, mensaje_tec, precio, vol = calculos.analizar_semaforo(df_hist, ticker_encontrado)
             
-            # Conversión Divisa
             moneda = "EUR"
             if not ticker_encontrado.endswith(".MC"):
                 factor = datos.obtener_precio_dolar()
                 precio = precio * factor
                 moneda = "USD (Conv)"
 
-            # Lógica de Color (Semáforo visual)
             color_nota = "red"
             if estado_tec == "VERDE":
                 if nota_num >= 8: color_nota = "green"
@@ -86,7 +77,6 @@ if st.session_state['busqueda_activa']:
             elif estado_tec == "NARANJA":
                 color_nota = "orange"
 
-            # --- VISUALIZACIÓN DEL INFORME ---
             kpi1, kpi2, kpi3 = st.columns(3)
             kpi1.metric("Empresa", nombre_bonito)
             kpi2.metric("Precio Actual", f"{precio:.2f} €", delta=moneda)
@@ -99,7 +89,6 @@ if st.session_state['busqueda_activa']:
             st.divider()
 
             g_col, t_col = st.columns([2, 1])
-            
             with g_col:
                 st.subheader("📈 Gráfico de Precios")
                 try:
@@ -123,73 +112,88 @@ if st.session_state['busqueda_activa']:
             st.error(f"Error al procesar los datos: {e}")
 
 # ==============================================================================
-# ESCENARIO B: NO HAY BÚSQUEDA -> MOSTRAMOS EL RANKING (Si se pulsa)
+# ESCENARIO B: RANKING GENERAL (RESTUARADO AL 100%)
 # ==============================================================================
-elif boton_ranking: # Si pulsamos el botón de Ranking
-    st.info("📡 Escaneando todas las empresas (Esto tarda unos segundos)...")
+elif boton_ranking:
+    # 1. Mensaje de carga inicial
+    st.info("📡 Escaneando mercados de España y EEUU (Descarga Segura)...")
     
     try:
+        # Descarga masiva
         df_todos = datos.descargar_datos(datos.EMPRESAS_SELECCIONADAS)
-        factor = datos.obtener_precio_dolar()
-        
-        lista_final = []
-        
-        # Barra de progreso
-        barra = st.progress(0)
-        total = len(datos.EMPRESAS_SELECCIONADAS)
-        
-        for i, ticker in enumerate(datos.EMPRESAS_SELECCIONADAS):
-            barra.progress((i+1)/total)
-            try:
-                # Análisis rápido
-                estado, msg, precio, vol = calculos.analizar_semaforo(df_todos, ticker)
-                nota, desglose = analisis_fundamental.analizar_calidad_fundamental(ticker)
-                
-                precio_fin = precio * factor if not ticker.endswith(".MC") else precio
-                
-                fila = {
-                    "Empresa": datos.NOMBRES.get(ticker, ticker),
-                    "Precio (€)": f"{precio_fin:.2f}",
-                    "Tendencia": estado,
-                    "Nota": nota,
-                    "Puntos": nota # Para ordenar
-                }
-                # Añadimos los ratios fundamentales a la tabla
-                fila.update(desglose)
-                
-                if estado != "ERROR":
-                    lista_final.append(fila)
-            except: pass
-            
-        barra.empty()
-        
-        # Filtros
-        verdes = [x for x in lista_final if x["Tendencia"] == "VERDE" and x["Puntos"] >= 5]
-        naranjas = [x for x in lista_final if x not in verdes and x["Tendencia"] != "ROJO"]
-        rojas = [x for x in lista_final if x["Tendencia"] == "ROJO"]
-        
-        verdes.sort(key=lambda x: x["Puntos"], reverse=True)
-        
-        # --- TABLAS DE RESULTADOS ---
-        # Definimos las columnas que queremos ver
-        cols_ver = ["Empresa", "Precio (€)", "Tendencia", "Nota", "Valoración (PER)", "Rentabilidad", "Deuda"]
-        
-        st.success(f"🟢 TOP OPORTUNIDADES ({len(verdes)})")
-        if verdes:
-            t1, t2 = st.tabs(["Top 5", "Top 10"])
-            with t1: st.dataframe(pd.DataFrame(verdes[:5])[cols_ver], use_container_width=True, hide_index=True)
-            with t2: st.dataframe(pd.DataFrame(verdes[:10])[cols_ver], use_container_width=True, hide_index=True)
-            
-        st.warning(f"🟠 MIXTAS / PRECAUCIÓN ({len(naranjas)})")
-        if naranjas:
-            st.dataframe(pd.DataFrame(naranjas[:10])[cols_ver], use_container_width=True, hide_index=True)
-            
-        st.error(f"❌ TENDENCIA BAJISTA ({len(rojas)})")
-        if rojas:
-            st.dataframe(pd.DataFrame(rojas)[["Empresa", "Tendencia"]], use_container_width=True, hide_index=True)
-
+        factor_eur = datos.obtener_precio_dolar()
     except Exception as e:
-        st.error(f"Error en el ranking: {e}")
+        st.error(f"Error grave: {e}"); st.stop()
+    
+    candidatos = []; lista_roja = []
+    
+    # BARRA DE PROGRESO 1: ANÁLISIS TÉCNICO
+    barra = st.progress(0)
+    
+    for i, ticker in enumerate(datos.EMPRESAS_SELECCIONADAS):
+        barra.progress((i + 1) / len(datos.EMPRESAS_SELECCIONADAS))
+        try:
+            estado, mensaje, precio, vol = calculos.analizar_semaforo(df_todos, ticker)
+            
+            precio_final = precio * factor_eur if not ticker.endswith(".MC") else precio
+            
+            item = {
+                "Ticker": ticker,
+                "Empresa": datos.NOMBRES.get(ticker, ticker),
+                "Precio": precio_final,
+                "Estado": estado,
+                "Motivo": mensaje
+            }
+            
+            if estado == "ROJO": lista_roja.append(item)
+            elif estado != "ERROR": candidatos.append(item) 
+        except: pass
+    barra.empty() # Quitamos la barra cuando acaba
+    
+    # 2. SEGUNDA FASE: AUDITORÍA FUNDAMENTAL
+    if candidatos:
+        st.info(f"🔬 Auditando a {len(candidatos)} empresas candidatas (Mirando balances)...")
+        verdes, naranjas = [], []
+        
+        # BARRA DE PROGRESO 2: FUNDAMENTAL
+        barra2 = st.progress(0)
+        
+        for i, item in enumerate(candidatos):
+            barra2.progress((i+1)/len(candidatos))
+            try:
+                # Recuperamos el análisis completo
+                nota, desglose = analisis_fundamental.analizar_calidad_fundamental(item["Ticker"])
+                
+                item["Nota"] = f"{nota}/10"
+                item["Puntuacion"] = nota
+                item["Precio"] = f"{item['Precio']:.2f} €"
+                
+                # AÑADIMOS EL DESGLOSE AL DICCIONARIO DEL ITEM
+                # (Esto es lo que hace que salgan Dividendos, PER, etc.)
+                item.update(desglose)
+                
+                if item["Estado"] == "VERDE":
+                    if nota >= 5: verdes.append(item)
+                    else: item["Motivo"] = "Fundamentales débiles"; naranjas.append(item)
+                else: naranjas.append(item)
+            except: pass
+        barra2.empty()
+        
+        # Ordenamos
+        verdes.sort(key=lambda x: x["Puntuacion"], reverse=True)
+        naranjas.sort(key=lambda x: x["Puntuacion"], reverse=True)
+        
+        # Definimos las columnas que queremos ver (INCLUYENDO DIVIDENDOS)
+        cols_ver = ["Empresa", "Precio", "Nota", "Valoración (PER)", "Rentabilidad", "Dividendos", "Deuda"]
+        
+        # Función para filtrar columnas que existan (por si alguna falla)
+        def mostrar_tabla(lista, limite=None):
+            if not lista: 
+                st.write("Sin datos.")
+                return
+            
+            df = pd.DataFrame(lista)
+
 
 
 
