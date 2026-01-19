@@ -38,35 +38,53 @@ def encontrar_ticker(texto_busqueda):
 
 def descargar_datos(tickers):
     """
-    Descarga España y EEUU por separado para evitar fallos.
-    Devuelve precios en moneda original (la conversión se hace fuera).
+    Descarga España y EEUU asegurando que las columnas tengan el nombre del Ticker.
     """
-    print(f"📡 Iniciando descarga segura...")
+    print(f"📡 Iniciando descarga segura para: {tickers}")
     
-    # 1. Separamos listas
     lista_es = [t for t in tickers if ".MC" in t]
     lista_us = [t for t in tickers if ".MC" not in t]
     
     df_final = pd.DataFrame()
 
-    # 2. Descargar España
-    if lista_es:
+    def procesar_descarga(lista):
+        if not lista: return pd.DataFrame()
         try:
-            df_es = yf.download(lista_es, period="1y", progress=False, auto_adjust=True)['Close']
-            # Corrección si solo es 1 empresa
-            if isinstance(df_es, pd.Series): df_es = df_es.to_frame()
-            df_final = pd.concat([df_final, df_es], axis=1)
-        except: pass
+            # Descargamos
+            datos = yf.download(lista, period="1y", progress=False, auto_adjust=True)
+            
+            # Extraemos solo el cierre ('Close')
+            if 'Close' in datos.columns:
+                df = datos['Close']
+            else:
+                df = datos # Por si acaso ya viene directo
+            
+            # CORRECCIÓN DE COLUMNAS (La parte importante)
+            # Si es una Serie (1 sola empresa), la convertimos a DataFrame y le ponemos su nombre
+            if isinstance(df, pd.Series):
+                df = df.to_frame()
+                df.columns = lista # Forzamos que la columna se llame 'BBVA.MC' y no 'Close'
+            
+            # Si es un DataFrame de 1 sola columna pero se llama 'Close'
+            elif isinstance(df, pd.DataFrame) and len(df.columns) == 1 and len(lista) == 1:
+                df.columns = lista
+                
+            return df
+        except Exception as e:
+            print(f"Error descargando {lista}: {e}")
+            return pd.DataFrame()
 
-    # 3. Descargar EEUU
-    if lista_us:
-        try:
-            df_us = yf.download(lista_us, period="1y", progress=False, auto_adjust=True)['Close']
-            if isinstance(df_us, pd.Series): df_us = df_us.to_frame()
-            df_final = pd.concat([df_final, df_us], axis=1)
-        except: pass
-        
-    # Limpieza de fechas (quitar hora)
+    # Procesamos ambas listas
+    df_es = procesar_descarga(lista_es)
+    df_us = procesar_descarga(lista_us)
+    
+    # Unimos
+    if not df_es.empty:
+        df_final = pd.concat([df_final, df_es], axis=1)
+    if not df_us.empty:
+        df_final = pd.concat([df_final, df_us], axis=1)
+
+    # Limpieza de fechas
     if not df_final.empty:
         df_final.index = df_final.index.tz_localize(None)
         
@@ -78,4 +96,4 @@ def obtener_precio_dolar():
         tasa = yf.Ticker("EURUSD=X").history(period="1d")['Close'].iloc[-1]
         return 1 / tasa
     except:
-        return 1.0 # Si falla, 1 a 1
+        return 1.0
