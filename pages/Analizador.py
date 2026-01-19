@@ -8,18 +8,8 @@ import graficos
 st.set_page_config(page_title="Semáforo Pro", page_icon="🚦", layout="wide")
 st.title("🚦 Semáforo & Analizador Pro")
 
-# --- 🧠 GESTIÓN DE MEMORIA (CALLBACKS) ---
-# Esta función se ejecuta JUSTO cuando das a Enter o click en Buscar
-def guardar_busqueda():
-    # Copiamos lo que has escrito en la caja a la memoria permanente
-    if 'input_usuario' in st.session_state and st.session_state['input_usuario']:
-        st.session_state['ticker_fijo'] = st.session_state['input_usuario']
-
-def limpiar_busqueda():
-    # Borramos la búsqueda individual para ver el ranking limpio
-    st.session_state['ticker_fijo'] = None
-
-# Inicializamos variables si no existen
+# --- 🧠 GESTIÓN DE MEMORIA SEGURA ---
+# Iniciamos la variable 'ticker_fijo' vacía si no existe
 if 'ticker_fijo' not in st.session_state:
     st.session_state['ticker_fijo'] = None
 
@@ -30,31 +20,33 @@ col_izq, col_der = st.columns([2, 3])
 with col_izq:
     st.subheader("Escáner General")
     st.write("Analiza las 60 empresas vigiladas.")
-    # El botón ranking limpia la búsqueda individual
-    boton_ranking = st.button("🔄 Generar Ranking Completo", type="primary", use_container_width=True, on_click=limpiar_busqueda)
+    
+    # Callback simple para limpiar
+    def limpiar():
+        st.session_state['ticker_fijo'] = None
+        
+    boton_ranking = st.button("🔄 Generar Ranking Completo", type="primary", use_container_width=True, on_click=limpiar)
 
 with col_der:
     st.subheader("Buscador Específico")
     st.write("Busca por nombre o ticker (Ej: Amadeus, Amazon...)")
     
-    c_input, c_btn = st.columns([4, 1])
-    
-    # Caja de texto. Si das ENTER, se ejecuta guardar_busqueda
-    texto = c_input.text_input(
-        "Empresa", 
-        placeholder="Ej: Inditex", 
-        key="input_usuario", 
-        on_change=guardar_busqueda, 
-        label_visibility="collapsed"
-    )
-    
-    # Botón. Si das CLICK, se ejecuta guardar_busqueda
-    boton_buscar = c_btn.button("🔍 Buscar", on_click=guardar_busqueda)
+    # --- 🛡️ LA SOLUCIÓN BLINDADA: ST.FORM ---
+    # El formulario evita que la página parpadee antes de tiempo
+    with st.form(key="mi_formulario_busqueda"):
+        c_input, c_btn = st.columns([4, 1])
+        
+        texto_input = c_input.text_input("Empresa", placeholder="Ej: Inditex", label_visibility="collapsed")
+        boton_enviar = c_btn.form_submit_button("🔍 Buscar")
+        
+        # SI PULSAMOS EL BOTÓN DENTRO DEL FORMULARIO:
+        if boton_enviar and texto_input:
+            st.session_state['ticker_fijo'] = texto_input
 
 st.markdown("---")
 
 # ==============================================================================
-# 🕵️‍♂️ LÓGICA DEL BUSCADOR INDIVIDUAL (Con memoria persistente)
+# 🕵️‍♂️ LÓGICA DEL BUSCADOR INDIVIDUAL (Lee de la Memoria Segura)
 # ==============================================================================
 if st.session_state['ticker_fijo']:
     
@@ -208,7 +200,6 @@ elif boton_ranking:
                 cols = ["Empresa", "Precio", "Nota", "Valoración (PER)", "Deuda", "Rentabilidad", "Crecimiento"]
                 # Filtramos solo las columnas que existen en los datos
                 df_mostrar = pd.DataFrame(lista[:n])
-                # Aseguramos que solo mostramos columnas que existen (por si falla alguna descarga)
                 cols_finales = [c for c in cols if c in df_mostrar.columns]
                 st.dataframe(df_mostrar[cols_finales], use_container_width=True, hide_index=True)
 
@@ -228,4 +219,5 @@ elif boton_ranking:
     st.error(f"❌ EVITAR ({len(lista_roja)})")
     if lista_roja: 
         st.dataframe(pd.DataFrame(lista_roja)[["Empresa", "Motivo"]], use_container_width=True, hide_index=True)
+
 
