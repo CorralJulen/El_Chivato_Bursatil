@@ -5,8 +5,9 @@ import datos
 import calculos
 import analisis_fundamental
 
-# --- CONFIGURACIÓN INICIAL (Full Width) ---
-st.set_page_config(page_title="Inversor Pro | AI Wealth", page_icon="🏦", layout="wide")
+# --- CONFIGURACIÓN INICIAL ---
+# He cambiado también el título de la pestaña del navegador para que cuadre
+st.set_page_config(page_title="Gestor Patrimonio IA", page_icon="🏦", layout="wide")
 
 # ==============================================================================
 # 🎨 ESTILOS CSS "PREMIUM FINTECH"
@@ -64,8 +65,9 @@ st.markdown("""
 # ==============================================================================
 c_head1, c_head2 = st.columns([3, 1])
 with c_head1:
-    st.title("🏦 AI Wealth Manager")
-    st.caption("Gestión Patrimonial Automatizada • Algoritmo v2.4")
+    # --- CAMBIO AQUÍ: Título en Español ---
+    st.title("🏦 Gestor de Patrimonio con Inteligencia Artificial")
+    st.caption("Planificación Financiera Automatizada • Algoritmo v2.4")
 
 st.markdown("---")
 
@@ -194,8 +196,7 @@ if boton_generar:
                 }
             )
             
-            # --- CAMBIO: BOTÓN DE DESCARGA REAL (CSV/EXCEL) ---
-            # Convertimos el DataFrame a CSV
+            # BOTÓN DE DESCARGA CSV (FUNCIONA DE VERDAD)
             csv = df_c.to_csv(index=False).encode('utf-8')
             
             st.download_button(
@@ -212,4 +213,3 @@ if boton_generar:
 
 else:
     st.info("👋 Configure sus parámetros arriba y pulse 'Generar Estrategia' para comenzar.")
-
