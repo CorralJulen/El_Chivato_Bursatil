@@ -190,30 +190,38 @@ st.caption("© 2023-2024 El Chivato Bursátil AI Platforms. v2.5.0-stable. Power
 
 # --- AÑADIR AL FINAL DE CADA ARCHIVO .PY ---
 
-# Barra lateral con información del desarrollador y donaciones
+# --- Sustiuye el bloque anterior por este ---
 with st.sidebar:
     st.markdown("---")
     st.markdown("### 👨‍💻 Sobre el Proyecto")
     st.caption("Desarrollado con ❤️ usando Python y Streamlit.")
     
-    st.markdown("") # Espacio
-    
-# --- BARRA LATERAL CON DONACIÓN (Copiar al final de cada archivo) ---
-with st.sidebar:
-    st.markdown("---")
-    st.markdown("### 👨‍💻 Sobre el Proyecto")
-    st.caption("Desarrollado con ❤️ usando Python y Streamlit.")
-    
-    st.markdown("") # Espacio vertical
-    
-    # Tu botón real de PayPal
+    st.markdown("") 
     st.markdown("¿Te ha sido útil?")
-    st.link_button(
-        label="☕ Invítame a un café", 
-        url="https://paypal.me/JulenCorralLop", # <--- TU ENLACE YA PUESTO
-        type="primary", 
-        use_container_width=True
+    
+    # TRUCO HTML: Botón que fuerza abrir el navegador externo
+    # Nota: He puesto tu enlace https://paypal.me/JulenCorralLop
+    st.markdown(
+        """
+        <a href="https://paypal.me/JulenCorralLop" target="_blank" style="text-decoration: none;">
+            <div style="
+                width: 100%;
+                background-color: #FF4B4B;
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                text-align: center;
+                font-weight: bold;
+                border: 1px solid #FF4B4B;">
+                ☕ Invítame a un café
+            </div>
+        </a>
+        """,
+        unsafe_allow_html=True
     )
     
     st.caption("v2.5.0 - Stable Release")
+    
+    st.caption("v2.5.0 - Stable Release")
+
 
