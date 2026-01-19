@@ -9,9 +9,9 @@ st.set_page_config(page_title="Semáforo Pro", page_icon="🚦", layout="wide")
 st.title("🚦 Semáforo & Analizador Pro")
 
 # --- 🧠 GESTIÓN DE MEMORIA (CALLBACKS) ---
-# Esta función se ejecuta JUSTO cuando das a Enter o click en Buscar
+# Esta función se ejecuta AUTOMÁTICAMENTE cuando das a Enter o click en Buscar
 def guardar_busqueda():
-    # Copiamos lo que has escrito en la caja (widget) a la memoria permanente
+    # Copiamos lo que has escrito en la caja a la memoria permanente
     st.session_state['ticker_fijo'] = st.session_state['input_usuario']
 
 # Si no existe la variable fija, la creamos vacía
@@ -27,7 +27,7 @@ with col_izq:
     st.write("Analiza las 60 empresas vigiladas.")
     
     def activar_ranking():
-        st.session_state['ticker_fijo'] = None # Borramos la búsqueda individual
+        st.session_state['ticker_fijo'] = None # Borramos la búsqueda individual para ver el ranking
         
     boton_ranking = st.button("🔄 Generar Ranking Completo", type="primary", use_container_width=True, on_click=activar_ranking)
 
@@ -35,20 +35,19 @@ with col_der:
     st.subheader("Buscador Específico")
     st.write("Busca por nombre o ticker (Ej: Amadeus, Amazon...)")
     
-    # --- CAMBIO CLAVE: SIN FORMULARIO ---
     c_input, c_btn = st.columns([4, 1])
     
     # Caja de texto vinculada a un evento (on_change)
-    # Si pulsas ENTER en la caja, se ejecuta 'guardar_busqueda' automáticamente
+    # Si pulsas ENTER, se ejecuta 'guardar_busqueda' y SE GUARDA para siempre
     texto = c_input.text_input(
         "Empresa", 
         placeholder="Ej: Inditex", 
-        key="input_usuario",  # Nombre interno del widget
-        on_change=guardar_busqueda, # ¡El truco anti-parpadeo!
+        key="input_usuario",  # Clave interna del widget
+        on_change=guardar_busqueda, 
         label_visibility="collapsed"
     )
     
-    # Botón también vinculado
+    # El botón también dispara el guardado
     boton_buscar = c_btn.button("🔍 Buscar", on_click=guardar_busqueda)
 
 st.markdown("---")
@@ -74,7 +73,7 @@ if st.session_state['ticker_fijo']:
         if df_hist.empty:
             st.error(f"❌ No he encontrado datos para '{ticker_encontrado}'. Prueba con otro nombre.")
         else:
-            # B) Análisis (Protegido contra fallos puntuales)
+            # B) Análisis (Protegido con try/except para evitar bloqueos)
             try:
                 nota_num, desglose = analisis_fundamental.analizar_calidad_fundamental(ticker_encontrado)
                 estado_tec, mensaje_tec, precio, vol = calculos.analizar_semaforo(df_hist, ticker_encontrado)
@@ -88,7 +87,7 @@ if st.session_state['ticker_fijo']:
                     precio_final = precio
                     moneda_origen = "EUR"
 
-                # Lógica de colores
+                # Lógica de colores unificada
                 if estado_tec == "ROJO": color_nota = "red"
                 elif estado_tec == "NARANJA": color_nota = "orange"
                 else:
@@ -139,7 +138,6 @@ if st.session_state['ticker_fijo']:
 # 🔄 LÓGICA DEL RANKING GENERAL
 # ==============================================================================
 elif boton_ranking:
-    # (El código del ranking se mantiene igual, ya funciona bien)
     st.info("📡 Escaneando mercado...")
     
     try:
@@ -169,10 +167,10 @@ elif boton_ranking:
     if candidatos:
         verdes, naranjas = [], []
         
-        # Auditoría rápida fundamental
+        # Auditoría rápida
         for item in candidatos:
             try:
-                # Versión simplificada para el ranking (más rápida)
+                # Versión simplificada
                 nota, _ = analisis_fundamental.analizar_calidad_fundamental(item["Ticker"])
                 item["Nota"] = nota
                 
