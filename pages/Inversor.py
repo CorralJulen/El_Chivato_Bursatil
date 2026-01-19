@@ -11,43 +11,41 @@ st.set_page_config(page_title="Robo-Advisor Pro", page_icon="🤖", layout="wide
 # ==============================================================================
 # 🎨 ZONA DE ESTILO (CSS INYECTADO)
 # ==============================================================================
-# Esto cambia el aspecto visual de la aplicación para que parezca más "Premium".
 st.markdown("""
 <style>
-    /* 1. FONDO GENERAL DE LA APP (Patrón sutil + Degradado) */
+    /* 1. FONDO GENERAL */
     .stApp {
-        background-color: #f0f2f6; /* Color base gris azulado */
-        background-image: url("https://www.transparenttextures.com/patterns/cubes.png"); /* Patrón sutil */
+        background-color: #f0f2f6;
+        background-image: url("https://www.transparenttextures.com/patterns/cubes.png");
         background-blend-mode: overlay;
     }
 
-    /* 2. ESTILO DEL CONTENEDOR PRINCIPAL (Donde están los inputs) */
-    /* Buscamos el bloque que contiene los inputs para darle estilo de "tarjeta" */
+    /* 2. ESTILO TARJETA PARA INPUTS */
     div[data-testid="stVerticalBlock"] > div:has(div[data-testid="stNumberInput"]) {
-        background-color: rgba(255, 255, 255, 0.95); /* Fondo blanco casi opaco */
+        background-color: rgba(255, 255, 255, 0.95);
         padding: 25px;
-        border-radius: 15px; /* Bordes redondeados */
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Sombra suave */
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         border: 1px solid #e0e0e0;
         margin-bottom: 20px;
     }
 
-    /* 3. BOTÓN PRINCIPAL MÁS LLAMATIVO */
+    /* 3. BOTÓN PRINCIPAL */
     div.stButton > button:first-child {
-        background: linear-gradient(45deg, #2980b9, #6dd5fa); /* Degradado azul */
+        background: linear-gradient(45deg, #2980b9, #6dd5fa);
         color: white;
         font-weight: bold;
         border: none;
-        height: 50px; /* Más alto */
+        height: 50px;
         font-size: 18px;
         transition: all 0.3s ease;
     }
     div.stButton > button:first-child:hover {
-        transform: scale(1.02); /* Efecto zoom al pasar el ratón */
+        transform: scale(1.02);
         box-shadow: 0 6px 15px rgba(41, 128, 185, 0.4);
     }
     
-    /* 4. TÍTULOS MÁS MODERNOS */
+    /* 4. TÍTULOS */
     h1, h2, h3 {
         color: #2c3e50;
         font-family: 'Helvetica Neue', sans-serif;
@@ -59,11 +57,11 @@ st.markdown("""
 # ==============================================================================
 # 🏠 CABECERA Y TÍTULO
 # ==============================================================================
-# Imagen de banner para dar contexto "tech/finance"
+# --- CORRECCIÓN AQUÍ: Hemos quitado 'height=200' que daba error ---
+# Hemos añadido '&h=300' a la URL para que Unsplash nos la dé ya recortada
 st.image(
-    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=2070&q=80",
-    use_container_width=True,
-    height=200, # Altura fija para que sea un banner
+    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=2070&h=300&q=80",
+    use_container_width=True
 )
 
 st.title("🤖 El Inversor Inteligente")
@@ -79,7 +77,6 @@ st.write("") # Espacio
 # ==============================================================================
 # 🎛️ ZONA DE CONFIGURACIÓN (ESTILO TARJETA)
 # ==============================================================================
-# El CSS de arriba hará que esta zona parezca una tarjeta blanca flotante
 st.subheader("💼 Configura tu Inversión")
 
 col1, col2 = st.columns(2)
@@ -102,13 +99,12 @@ else:
 st.write("") 
 
 # --- BOTÓN DE ACCIÓN ---
-# El CSS de arriba lo hará azul degradado y más grande
 boton_generar = st.button("✨ GENERAR CARTERA OPTIMIZADA", type="primary", use_container_width=True)
 
 st.markdown("---")
 
 # ==============================================================================
-# 🚀 LÓGICA PRINCIPAL (SE MANTIENE IGUAL)
+# 🚀 LÓGICA PRINCIPAL
 # ==============================================================================
 if boton_generar:
     
@@ -198,7 +194,6 @@ if boton_generar:
         
         st.success(f"✅ Cartera Generada. Inversión Total: {total_invertido:.2f} €")
         
-        # Usamos un contenedor con fondo blanco para los resultados
         with st.container():
             st.markdown("<div style='background-color: rgba(255,255,255,0.9); padding: 20px; border-radius: 15px;'>", unsafe_allow_html=True)
             c1, c2 = st.columns([1, 2])
@@ -215,4 +210,3 @@ if boton_generar:
             st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.error("No se han encontrado acciones adecuadas hoy.")
-
