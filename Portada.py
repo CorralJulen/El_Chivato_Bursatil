@@ -194,16 +194,15 @@ st.caption("© 2023-2024 El Chivato Bursátil AI Platforms. v2.5.0-stable. Power
   
 with st.sidebar:
     st.markdown("---")
-    st.markdown("### 👨‍💻 Sobre el Proyecto")
-    st.caption("Herramienta gratuita de análisis financiero.")
+    st.markdown("### 👨‍💻 Apoya el proyecto")
+    st.write("Si el Chivato te ayuda, puedes invitarme a un café:")
     
-    st.markdown("❤️ **¿Te gusta la app?**")
-    st.write("Si este chivato te parece buen trabajo, puedes apoyarme invitándome a un café:")
+    # Genera un QR de tu PayPal automáticamente
+    st.image("https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://paypal.me/JulenCorralLop")
     
-    # Enlace directo pero con nombre limpio
-    st.markdown(f"👉 [paypal.me/JulenCorralLop](https://paypal.me/JulenCorralLop)")
-    
-    st.caption("v2.5.0 - Stable Release")
+    st.caption("Escanea el QR con tu móvil o haz una captura")
+    st.markdown(f"Enlace: `paypal.me/JulenCorralLop`")
+
 
 
 
