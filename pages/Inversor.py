@@ -224,13 +224,22 @@ with st.sidebar:
     
     st.markdown("") # Espacio
     
-    # Botón de Donación Estilizado
+# --- BARRA LATERAL CON DONACIÓN (Copiar al final de cada archivo) ---
+with st.sidebar:
+    st.markdown("---")
+    st.markdown("### 👨‍💻 Sobre el Proyecto")
+    st.caption("Desarrollado con ❤️ usando Python y Streamlit.")
+    
+    st.markdown("") # Espacio vertical
+    
+    # Tu botón real de PayPal
     st.markdown("¿Te ha sido útil?")
     st.link_button(
         label="☕ Invítame a un café", 
-        url="https://www.paypal.com/paypalme/TU_USUARIO", # <--- PON AQUÍ TU LINK REAL (PayPal o Ko-fi)
+        url="https://paypal.me/JulenCorralLop", # <--- TU ENLACE YA PUESTO
         type="primary", 
         use_container_width=True
     )
     
     st.caption("v2.5.0 - Stable Release")
+
