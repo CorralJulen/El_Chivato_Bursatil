@@ -13,12 +13,12 @@ st.set_page_config(page_title="Inversor Pro | AI Wealth", page_icon="🏦", layo
 # ==============================================================================
 st.markdown("""
 <style>
-    /* 1. FONDO GLOBAL: Gris muy suave, típico de dashboards financieros */
+    /* 1. FONDO GLOBAL: Gris muy suave */
     .stApp {
         background-color: #F8F9FA;
     }
 
-    /* 2. TARJETAS (Card UI): Fondo blanco, bordes redondeados, sombra suave */
+    /* 2. TARJETAS (Card UI) */
     .css-card {
         background-color: #FFFFFF;
         padding: 30px;
@@ -28,16 +28,16 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* 3. TÍTULOS: Fuente moderna y colores oscuros */
+    /* 3. TÍTULOS */
     h1, h2, h3 {
         color: #1A1A1A;
         font-family: 'Inter', sans-serif;
         font-weight: 700;
     }
     
-    /* 4. BOTÓN PRINCIPAL: Estilo "Comprar" / "Ejecutar" */
+    /* 4. BOTÓN PRINCIPAL */
     div.stButton > button:first-child {
-        background-color: #000000; /* Negro puro o azul corporativo */
+        background-color: #000000;
         color: white;
         border-radius: 8px;
         padding: 0.75rem 1rem;
@@ -51,7 +51,7 @@ st.markdown("""
         transform: translateY(-2px);
     }
 
-    /* 5. METRICAS: Estilo limpio */
+    /* 5. METRICAS */
     div[data-testid="stMetricValue"] {
         font-size: 28px;
         color: #2E86C1;
@@ -62,7 +62,6 @@ st.markdown("""
 # ==============================================================================
 # 🏦 CABECERA TIPO "APP"
 # ==============================================================================
-# Usamos columnas para poner Logo/Título a la izquierda y quizás usuario a la derecha
 c_head1, c_head2 = st.columns([3, 1])
 with c_head1:
     st.title("🏦 AI Wealth Manager")
@@ -73,7 +72,6 @@ st.markdown("---")
 # ==============================================================================
 # 🎛️ PANEL DE CONTROL (DENTRO DE UNA "TARJETA")
 # ==============================================================================
-# Creamos un contenedor visual simulando una tarjeta
 with st.container():
     st.markdown("<div style='background-color: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee;'>", unsafe_allow_html=True)
     
@@ -82,18 +80,16 @@ with st.container():
     c1, c2, c3 = st.columns([2, 2, 1])
     
     with c1:
-        # Input con formato de moneda
         capital = st.number_input("Capital Inicial (€)", min_value=1000.0, value=10000.0, step=500.0, format="%.2f")
     
     with c2:
         perfil = st.selectbox("Perfil de Inversor", ["🐢 Conservador (Bajo Riesgo)", "⚖️ Moderado (Equilibrado)", "🚀 Dinámico (Alto Rendimiento)"])
     
     with c3:
-        st.write(" ") # Espacio para alinear el botón
+        st.write(" ")
         st.write(" ")
         boton_generar = st.button("🚀 GENERAR ESTRATEGIA")
         
-    # Feedback visual inmediato del perfil
     if "Dinámico" in perfil:
         st.caption("⚠️ **Aviso de Riesgo:** Este perfil prioriza el crecimiento sobre la seguridad. Volatilidad esperada: Alta.")
     else:
@@ -101,28 +97,25 @@ with st.container():
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-st.write("") # Espacio separador
+st.write("")
 
 # ==============================================================================
 # 📊 RESULTADOS (SECCIÓN DASHBOARD)
 # ==============================================================================
 if boton_generar:
     
-    # Simulación de carga "profesional"
     with st.spinner("🔄 Conectando con mercados globales (NYSE, NASDAQ, BME)..."):
         try:
             df_todos = datos.descargar_datos(datos.EMPRESAS_SELECCIONADAS)
             factor_eur = datos.obtener_precio_dolar()
         except: st.error("Error de conexión API."); st.stop()
 
-    # --- LÓGICA DE NEGOCIO (Igual que antes, pero más limpia) ---
+    # --- LÓGICA DE NEGOCIO ---
     todos = []
-    # Definimos porcentajes según perfil
     if "Conservador" in perfil: p_seg, p_mod, p_risk = 0.8, 0.2, 0.0
     elif "Moderado" in perfil:    p_seg, p_mod, p_risk = 0.6, 0.4, 0.0
     else:                         p_seg, p_mod, p_risk = 0.2, 0.4, 0.4
     
-    # Procesamiento rápido
     for t in datos.EMPRESAS_SELECCIONADAS:
         try:
             est, _, prec, vol = calculos.analizar_semaforo(df_todos, t)
@@ -132,17 +125,14 @@ if boton_generar:
                 todos.append({"T": t, "E": datos.NOMBRES.get(t, t), "P": precio_e, "N": nota, "V": vol})
         except: pass
 
-    # Clasificación en cubos
     c_seg = [x for x in todos if x["N"] >= 7 and x["V"] <= 0.01]
     c_mod = [x for x in todos if x["N"] >= 7 and 0.01 < x["V"] <= 0.015]
     c_rsk = [x for x in todos if x["V"] > 0.015]
 
-    # Función de reparto
     cartera = []
     def asignar(lista, pct, etiqueta):
         if pct == 0: return
         dinero = capital * pct
-        # Fallbacks básicos
         if not lista:
             if etiqueta == "Riesgo" and todos: lista = sorted(todos, key=lambda x: x["V"], reverse=True)[:3]
             elif etiqueta == "Equilibrio" and c_seg: lista = c_seg
@@ -161,13 +151,13 @@ if boton_generar:
     asignar(c_mod, p_mod, "⚖️ Crecimiento")
     asignar(c_rsk, p_risk, "🔥 Especulativo")
 
-    # --- VISUALIZACIÓN TIPO "ECOMMERCE" ---
+    # --- VISUALIZACIÓN ---
     if cartera:
         df_c = pd.DataFrame(cartera)
         total_real = df_c["Total"].sum()
         cash = capital - total_real
         
-        # 1. TARJETAS DE MÉTRICAS (KPIs)
+        # 1. TARJETAS DE MÉTRICAS
         st.markdown("### 📊 Resumen de la Propuesta")
         k1, k2, k3, k4 = st.columns(4)
         k1.metric("Inversión Total", f"{total_real:,.2f} €")
@@ -177,23 +167,19 @@ if boton_generar:
         
         st.markdown("---")
         
-        # 2. SECCIÓN VISUAL (GRÁFICO + TABLA DETALLADA)
+        # 2. SECCIÓN VISUAL
         g_col, t_col = st.columns([1, 2])
         
         with g_col:
-            # Gráfico de Donut limpio
             fig = px.pie(df_c, values='Total', names='Categoría', hole=0.6, color='Categoría',
                          color_discrete_map={"🛡️ Preservación":"#27AE60", "⚖️ Crecimiento":"#F39C12", "🔥 Especulativo":"#C0392B"})
             fig.update_layout(showlegend=False, margin=dict(t=0, b=0, l=0, r=0), height=250)
             st.plotly_chart(fig, use_container_width=True)
-            
-            # Nota central
             st.markdown(f"<div style='text-align: center; color: gray;'>Diversificación por Estrategia</div>", unsafe_allow_html=True)
 
         with t_col:
             st.markdown("#### 🧾 Orden de Compra")
             
-            # Formateamos la tabla para que parezca una factura
             df_display = df_c.copy()
             df_display["Precio"] = df_display["Precio"].apply(lambda x: f"{x:.2f} €")
             df_display["Total"] = df_display["Total"].apply(lambda x: f"{x:.2f} €")
@@ -208,12 +194,22 @@ if boton_generar:
                 }
             )
             
-            # Botón final de "simular compra"
-            st.button("📥 Descargar Informe PDF (Simulado)", type="secondary", use_container_width=True)
+            # --- CAMBIO: BOTÓN DE DESCARGA REAL (CSV/EXCEL) ---
+            # Convertimos el DataFrame a CSV
+            csv = df_c.to_csv(index=False).encode('utf-8')
+            
+            st.download_button(
+                label="📥 Descargar Orden en CSV (Excel)",
+                data=csv,
+                file_name="mi_cartera_optimizada.csv",
+                mime="text/csv",
+                type="secondary",
+                use_container_width=True
+            )
 
     else:
         st.warning("El algoritmo no ha encontrado oportunidades que cumplan sus criterios estrictos hoy.")
 
 else:
-    # MENSAJE DE BIENVENIDA LIMPIO
     st.info("👋 Configure sus parámetros arriba y pulse 'Generar Estrategia' para comenzar.")
+
