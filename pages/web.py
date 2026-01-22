@@ -7,17 +7,35 @@ st.set_page_config(page_title="Buscador Universal de Bolsa", page_icon="📈")
 st.title("📈 Buscador Universal de Inversiones")
 st.markdown("Escribe el nombre de **cualquier empresa** y la IA analizará sus datos y su gráfico.")
 
-# 2. CONFIGURACIÓN DE SEGURIDAD (Busca la clave en la "Caja Fuerte")
+# ... (aquí arriba están tus imports y st.set_page_config) ...
+
+st.title("📈 Buscador Universal de Inversiones")
+
+# 2. CONFIGURACIÓN DE SEGURIDAD
 try:
-    # Intenta coger la clave de los secretos de Streamlit
     api_key = st.secrets["GOOGLE_API_KEY"]
 except:
-    # Si no la encuentra (porque estás en tu PC y no has configurado el archivo), avisa
-    st.error("⚠️ No he encontrado la API Key. Si estás en local, configura .streamlit/secrets.toml")
+    st.error("No se encontró la API Key.")
     st.stop()
 
 if api_key:
+    # Creas la conexión
     client = genai.Client(api_key=api_key)
+
+    
+    # --- CÓDIGO DE DIAGNÓSTICO ---
+    if st.sidebar.button("🛠️ Ver mis modelos disponibles"):
+        try:
+            modelos = client.models.list()
+            # Sacamos solo el nombre limpio (quitando 'models/')
+            lista = [m.name.replace("models/", "") for m in modelos]
+            st.sidebar.success("✅ Modelos activos para tu cuenta:")
+            st.sidebar.code("\n".join(lista)) # Los mostramos en una lista fácil de leer
+        except Exception as e:
+            st.sidebar.error(f"Error al listar: {e}")
+    # -----------------------------------------------------------------
+
+# ... (aquí sigue el resto de tu código: st.text_input, etc.) ...
 
 # 3. EL BUSCADOR
 nombre_empresa = st.text_input("Nombre de la empresa (Ej: Adidas, Ferrari, Inditex...):")
@@ -249,6 +267,7 @@ if st.button(f"🔍 Escanear {len(tickers_a_escanear)} empresas ahora"):
             st.error(f"Error de conexión con IA: {e}")
             st.warning("⚠️ Si sale error 404: Prueba a cambiar el modelo a 'gemini-1.0-pro'.")
             st.warning("⚠️ Si sale error 429: Has gastado tus peticiones del minuto. Espera un poco.")
+
 
 
 
