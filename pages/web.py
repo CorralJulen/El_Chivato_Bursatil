@@ -114,4 +114,110 @@ if st.button("🔍 Buscar y Analizar"):
             st.error(f"Error: {e}")
 
     elif not api_key:
+
         st.warning("⚠️ Falta la API Key.")
+
+            # ---------------------------------------------------------
+# AÑADE ESTO AL FINAL DE TU ARCHIVO web.py
+# ---------------------------------------------------------
+
+st.divider()
+st.header("📡 Radar de Oportunidades (Scanner)")
+st.markdown("Este radar analiza tu lista de vigilancia y detecta qué acciones tienen **mayor potencial de subida** según el consenso de analistas.")
+
+# 1. TU LISTA DE VIGILANCIA
+# Puedes añadir o quitar las que quieras (usa los tickers reales)
+mis_acciones = ["TSLA", "AAPL", "AMZN", "MSFT", "GOOGL", "NVDA", "NFLX", "META", "AMD", "KO", "MCD", "DIS"]
+
+if st.button("🔄 Escanear Mercado en busca de 'Chollos'"):
+    
+    lista_oportunidades = []
+    
+    # Barra de progreso visual
+    barra = st.progress(0)
+    
+    with st.status("Analizando mercado...", expanded=True) as status:
+        for i, ticker in enumerate(mis_acciones):
+            try:
+                # Descargamos datos
+                stock = yf.Ticker(ticker)
+                info = stock.info
+                
+                nombre = info.get('shortName', ticker)
+                precio_actual = info.get('currentPrice', 0)
+                precio_objetivo = info.get('targetMeanPrice', 0) # Precio que estiman los analistas
+                
+                # Calculamos el POTENCIAL DE SUBIDA
+                # (Cuánto le falta para llegar al precio objetivo)
+                if precio_actual > 0 and precio_objetivo > 0:
+                    potencial = ((precio_objetivo - precio_actual) / precio_actual) * 100
+                    
+                    # Guardamos los datos
+                    lista_oportunidades.append({
+                        "Empresa": nombre,
+                        "Ticker": ticker,
+                        "Precio": f"${precio_actual}",
+                        "Objetivo": f"${precio_objetivo}",
+                        "Potencial": potencial  # Guardamos el número limpio para ordenar después
+                    })
+                    
+                status.write(f"✅ Analizada: {ticker}")
+                
+            except Exception as e:
+                status.write(f"❌ Error con {ticker}")
+            
+            # Actualizamos la barra de progreso
+            barra.progress((i + 1) / len(mis_acciones))
+
+        status.update(label="¡Escaneo completado!", state="complete")
+
+    # 2. PROCESAR Y ORDENAR RESULTADOS
+    if lista_oportunidades:
+        # Ordenamos la lista: Las que tienen MAYOR potencial primero
+        lista_ordenada = sorted(lista_oportunidades, key=lambda x: x['Potencial'], reverse=True)
+        
+        # 3. MOSTRAR EL "TOP 3" GANADOR
+        st.subheader("🏆 Top 3 Oportunidades de Compra (Según Analistas)")
+        
+        top_3 = lista_ordenada[:3]
+        
+        cols = st.columns(3)
+        for i, accion in enumerate(top_3):
+            color = "green" if accion['Potencial'] > 0 else "red"
+            cols[i].markdown(f"### {i+1}. {accion['Empresa']}")
+            cols[i].metric(
+                label="Potencial de Subida", 
+                value=f"{accion['Potencial']:.2f}%", 
+                delta_color="normal"
+            )
+            cols[i].write(f"Precio actual: **{accion['Precio']}**")
+            cols[i].write(f"Debería valer: **{accion['Objetivo']}**")
+
+        # 4. LA IA DA SU VEREDICTO FINAL
+        st.divider()
+        st.write("🤖 **El Consultor IA está revisando estas oportunidades...**")
+        
+        datos_para_ia = str(top_3) # Le pasamos los datos brutos de las 3 mejores
+        
+        prompt_radar = f"""
+        Actúa como un gestor de fondos agresivo. Acabo de escanear el mercado y estas son las 3 acciones con mayor descuento (mayor diferencia entre precio actual y precio objetivo):
+        
+        {datos_para_ia}
+        
+        Dime:
+        1. ¿Cuál de las 3 te parece la oportunidad más clara y por qué?
+        2. ¿Alguna de ellas podría ser una "trampa" (que esté barata porque la empresa va mal)?
+        3. Define un precio de entrada agresivo para la mejor opción.
+        """
+        
+        try:
+            consejo = client.models.generate_content(
+                model="gemini-3-flash-preview",
+                contents=prompt_radar,
+            )
+            st.info(consejo.text)
+        except:
+            st.error("La IA está descansando, pero los datos de arriba son correctos.")
+            
+    else:
+        st.warning("No se pudieron obtener datos suficientes.")
