@@ -245,6 +245,7 @@ if st.button(f"🔍 Escanear {len(tickers_a_escanear)} empresas ahora"):
                     contents=prompt_auto,
                 )
                 st.info(analisis.text)
-        except:
-            st.warning("La IA no pudo responder, pero los datos del escáner son correctos.")
+       except Exception as e:
+            st.error(f"Error detallado de la IA: {e}")
+
 
