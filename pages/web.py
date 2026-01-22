@@ -118,106 +118,133 @@ if st.button("🔍 Buscar y Analizar"):
         st.warning("⚠️ Falta la API Key.")
 
             # ---------------------------------------------------------
-# AÑADE ESTO AL FINAL DE TU ARCHIVO web.py
+# ---------------------------------------------------------
 # ---------------------------------------------------------
 
 st.divider()
-st.header("📡 Radar de Oportunidades (Scanner)")
-st.markdown("Este radar analiza tu lista de vigilancia y detecta qué acciones tienen **mayor potencial de subida** según el consenso de analistas.")
+st.header("📡 Radar de Oportunidades Masivo")
+st.markdown("Escanea índices completos para encontrar las acciones más infravaloradas según los analistas.")
 
-# 1. TU LISTA DE VIGILANCIA
-# Puedes añadir o quitar las que quieras (usa los tickers reales)
-mis_acciones = ["TSLA", "AAPL", "AMZN", "MSFT", "GOOGL", "NVDA", "NFLX", "META", "AMD", "KO", "MCD", "DIS"]
+# 1. SELECTOR DE MERCADO
+mercado = st.radio("¿Qué mercado quieres escanear?", ["🇪🇸 IBEX 35 (España)", "🇺🇸 Top 50 Tech & Blue Chips (EEUU)"], horizontal=True)
 
-if st.button("🔄 Escanear Mercado en busca de 'Chollos'"):
+# 2. DEFINICIÓN DE LISTAS (Los índices)
+if "España" in mercado:
+    # Lista oficial IBEX 35 (con el sufijo .MC necesario para Yahoo)
+    tickers_a_escanear = [
+        "ITX.MC", "IBE.MC", "SAN.MC", "BBVA.MC", "TEF.MC", "REP.MC", "CABK.MC", "ACS.MC", 
+        "AENA.MC", "AMS.MC", "MTS.MC", "SAB.MC", "FER.MC", "GRF.MC", "IAG.MC", "NTGY.MC", 
+        "ANA.MC", "ACX.MC", "ENG.MC", "ELE.MC", "MAP.MC", "BKT.MC", "CLNX.MC", "COL.MC", 
+        "LOG.MC", "MER.MC", "MEL.MC", "PHM.MC", "RED.MC", "ROVI.MC", "SOL.MC", "VIS.MC"
+    ]
+else:
+    # Lista Top 50 EEUU (Mezcla de Tech, Salud, Finanzas y Consumo)
+    tickers_a_escanear = [
+        "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "UNH", "JNJ", 
+        "XOM", "V", "JPM", "PG", "MA", "HD", "CVX", "MRK", "ABBV", "PEP", "KO", "LLY", 
+        "BAC", "AVGO", "TMO", "COST", "DIS", "MCD", "CSCO", "ABT", "DHR", "ACN", "NFLX", 
+        "VZ", "NKE", "CRM", "INTC", "CMCSA", "PFE", "ADBE", "WMT", "AMD", "QCOM", "IBM", 
+        "TXN", "HON", "AMGN", "UNP", "LOW", "SPGI"
+    ]
+
+# 3. BOTÓN DE ESCANEO
+if st.button(f"🔍 Escanear {len(tickers_a_escanear)} empresas ahora"):
     
     lista_oportunidades = []
+    errores = 0
     
-    # Barra de progreso visual
-    barra = st.progress(0)
+    # Barra de progreso
+    barra_progreso = st.progress(0)
+    texto_estado = st.empty() # Texto que cambia dinámicamente
     
-    with st.status("Analizando mercado...", expanded=True) as status:
-        for i, ticker in enumerate(mis_acciones):
-            try:
-                # Descargamos datos
-                stock = yf.Ticker(ticker)
-                info = stock.info
-                
-                nombre = info.get('shortName', ticker)
-                precio_actual = info.get('currentPrice', 0)
-                precio_objetivo = info.get('targetMeanPrice', 0) # Precio que estiman los analistas
-                
-                # Calculamos el POTENCIAL DE SUBIDA
-                # (Cuánto le falta para llegar al precio objetivo)
-                if precio_actual > 0 and precio_objetivo > 0:
-                    potencial = ((precio_objetivo - precio_actual) / precio_actual) * 100
-                    
-                    # Guardamos los datos
-                    lista_oportunidades.append({
-                        "Empresa": nombre,
-                        "Ticker": ticker,
-                        "Precio": f"${precio_actual}",
-                        "Objetivo": f"${precio_objetivo}",
-                        "Potencial": potencial  # Guardamos el número limpio para ordenar después
-                    })
-                    
-                status.write(f"✅ Analizada: {ticker}")
-                
-            except Exception as e:
-                status.write(f"❌ Error con {ticker}")
+    # --- INICIO DEL BUCLE DE ANÁLISIS ---
+    for i, ticker in enumerate(tickers_a_escanear):
+        try:
+            # Actualizamos mensaje visual
+            texto_estado.text(f"Analizando {i+1}/{len(tickers_a_escanear)}: {ticker}...")
             
-            # Actualizamos la barra de progreso
-            barra.progress((i + 1) / len(mis_acciones))
+            # Descarga de datos
+            stock = yf.Ticker(ticker)
+            info = stock.info
+            
+            # Extraemos datos clave
+            precio_actual = info.get('currentPrice', info.get('previousClose', 0))
+            precio_objetivo = info.get('targetMeanPrice', 0)
+            nombre = info.get('shortName', ticker)
+            recomendacion = info.get('recommendationKey', 'none').upper() # buy, hold, sell
+            
+            # FILTRO DE CALIDAD: Solo guardamos si tenemos ambos precios
+            if precio_actual > 0 and precio_objetivo > 0:
+                potencial = ((precio_objetivo - precio_actual) / precio_actual) * 100
+                
+                lista_oportunidades.append({
+                    "Ticker": ticker,
+                    "Empresa": nombre,
+                    "Precio": precio_actual,
+                    "Objetivo": precio_objetivo,
+                    "Potencial %": round(potencial, 2),
+                    "Recomendación": recomendacion
+                })
+            
+        except Exception as e:
+            errores += 1
+        
+        # Actualizar barra (matemática simple: índice actual / total)
+        barra_progreso.progress((i + 1) / len(tickers_a_escanear))
 
-        status.update(label="¡Escaneo completado!", state="complete")
+    texto_estado.text("¡Análisis finalizado!")
+    st.success(f"Escaneadas {len(tickers_a_escanear)} empresas. Detectadas {len(lista_oportunidades)} con datos válidos.")
 
-    # 2. PROCESAR Y ORDENAR RESULTADOS
+    # --- RESULTADOS ---
     if lista_oportunidades:
-        # Ordenamos la lista: Las que tienen MAYOR potencial primero
-        lista_ordenada = sorted(lista_oportunidades, key=lambda x: x['Potencial'], reverse=True)
+        # Ordenamos: Las de mayor potencial arriba
+        df_resultados = sorted(lista_oportunidades, key=lambda x: x['Potencial %'], reverse=True)
         
-        # 3. MOSTRAR EL "TOP 3" GANADOR
-        st.subheader("🏆 Top 3 Oportunidades de Compra (Según Analistas)")
+        # 1. MOSTRAMOS EL TOP 5 GANADOR
+        st.subheader("🏆 Top 5: Mayores Oportunidades de Compra")
         
-        top_3 = lista_ordenada[:3]
-        
-        cols = st.columns(3)
-        for i, accion in enumerate(top_3):
-            color = "green" if accion['Potencial'] > 0 else "red"
-            cols[i].markdown(f"### {i+1}. {accion['Empresa']}")
-            cols[i].metric(
-                label="Potencial de Subida", 
-                value=f"{accion['Potencial']:.2f}%", 
-                delta_color="normal"
-            )
-            cols[i].write(f"Precio actual: **{accion['Precio']}**")
-            cols[i].write(f"Debería valer: **{accion['Objetivo']}**")
+        cols = st.columns(5)
+        for i in range(min(5, len(df_resultados))):
+            empresa = df_resultados[i]
+            with cols[i]:
+                # Ponemos color verde si el potencial es positivo
+                color = "green" if empresa['Potencial %'] > 0 else "red"
+                st.markdown(f"**{i+1}. {empresa['Ticker']}**")
+                st.write(f"_{empresa['Empresa'][:15]}..._") # Cortamos el nombre si es muy largo
+                st.metric(label="Potencial", value=f"{empresa['Potencial %']}%", delta_color="normal")
+                st.caption(f"Recom: {empresa['Recomendación']}")
 
-        # 4. LA IA DA SU VEREDICTO FINAL
+        # 2. TABLA COMPLETA (Para que el usuario vea todo)
         st.divider()
-        st.write("🤖 **El Consultor IA está revisando estas oportunidades...**")
+        with st.expander("📊 Ver tabla completa de resultados"):
+            st.dataframe(df_resultados)
+
+        # 3. LA IA ANALIZA AL GANADOR
+        ganador = df_resultados[0]
+        st.divider()
+        st.write(f"🤖 **La IA está analizando la oportunidad Nº1: {ganador['Empresa']}...**")
         
-        datos_para_ia = str(top_3) # Le pasamos los datos brutos de las 3 mejores
-        
-        prompt_radar = f"""
-        Actúa como un gestor de fondos agresivo. Acabo de escanear el mercado y estas son las 3 acciones con mayor descuento (mayor diferencia entre precio actual y precio objetivo):
-        
-        {datos_para_ia}
-        
-        Dime:
-        1. ¿Cuál de las 3 te parece la oportunidad más clara y por qué?
-        2. ¿Alguna de ellas podría ser una "trampa" (que esté barata porque la empresa va mal)?
-        3. Define un precio de entrada agresivo para la mejor opción.
+        prompt_auto = f"""
+        Actúa como inversor experto. Acabo de hacer un escáner de mercado y la empresa con MAYOR descuento es:
+        {ganador['Empresa']} ({ganador['Ticker']}).
+        - Precio Actual: {ganador['Precio']}
+        - Precio Objetivo Analistas: {ganador['Objetivo']}
+        - Potencial de subida: {ganador['Potencial %']}%
+        - Recomendación consenso: {ganador['Recomendación']}
+
+        Dime en 3 puntos breves:
+        1. ¿Por qué crees que el mercado la ha castigado tanto (por qué está barata)?
+        2. ¿Es una oportunidad real o un "cuchillo cayendo" (riesgo de quiebra)?
+        3. Estrategia: ¿Entrarías ya o esperarías?
         """
         
         try:
-            consejo = client.models.generate_content(
-                model="gemini-3-flash-preview",
-                contents=prompt_radar,
-            )
-            st.info(consejo.text)
+            with st.spinner("Consultando a Gemini..."):
+                analisis = client.models.generate_content(
+                    model="gemini-3-flash-preview",
+                    contents=prompt_auto,
+                )
+                st.info(analisis.text)
         except:
-            st.error("La IA está descansando, pero los datos de arriba son correctos.")
-            
-    else:
-        st.warning("No se pudieron obtener datos suficientes.")
+            st.warning("La IA no pudo responder, pero los datos del escáner son correctos.")
+
