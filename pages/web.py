@@ -241,9 +241,10 @@ if st.button(f"🔍 Escanear {len(tickers_a_escanear)} empresas ahora"):
         try:
             with st.spinner("Consultando a Gemini..."):
                 analisis = client.models.generate_content(
-                    model="gemini-3-flash-preview",
+                    model="gemini-1.5-flash",
                     contents=prompt_auto,
                 )
                 st.info(analisis.text)
         except Exception as e:
             st.error(f"Error detallado de la IA: {e}")
+
