@@ -240,15 +240,16 @@ if st.button(f"🔍 Escanear {len(tickers_a_escanear)} empresas ahora"):
         """
         
         try:
-            with st.spinner("Gemini 2.0 analizando la oportunidad..."):
+            with st.spinner("La IA está analizando los datos..."):
                 analisis = client.models.generate_content(
-                    model="gemini-2.0-flash",  # <--- ESTE ES EL NOMBRE CORRECTO DE TU LISTA
+                    model="gemini-flash-latest",  # <--- USAMOS EL ALIAS "COMODÍN"
                     contents=prompt_auto,
                 )
                 st.info(analisis.text)
         except Exception as e:
             st.error(f"Error: {e}")
-            st.warning("Consejo: Si sale error 429, significa que has hecho muchas preguntas seguidas. Espera 1 minuto.")
+            st.warning("Si sale error 429, espera 20 segundos y vuelve a probar.")
+
 
 
 
