@@ -220,35 +220,52 @@ if st.button(f"🔍 Escanear {len(tickers_a_escanear)} empresas ahora"):
         with st.expander("📊 Ver tabla completa de resultados"):
             st.dataframe(df_resultados)
 
-       # 3. LA IA ANALIZA AL GANADOR
-        ganador = df_resultados[0]
-        st.divider()
-        st.write(f"🤖 **La IA está analizando la oportunidad Nº1: {ganador['Empresa']}...**")
+       # 3. LA IA ANALIZA EL TOP 5 COMPLETO (EN UNA SOLA LLAMADA)
+        # Seleccionamos las 5 mejores (o menos si hay pocas)
+        top_seleccion = df_resultados[:5] 
         
-        prompt_auto = f"""
-        Actúa como inversor experto. Acabo de hacer un escáner de mercado y la empresa con MAYOR descuento es:
-        {ganador['Empresa']} ({ganador['Ticker']}).
-        - Precio Actual: {ganador['Precio']}
-        - Precio Objetivo Analistas: {ganador['Objetivo']}
-        - Potencial de subida: {ganador['Potencial %']}%
-        - Recomendación consenso: {ganador['Recomendación']}
+        st.divider()
+        st.subheader("🤖 Análisis de Cartera: Top 5 Oportunidades")
+        st.caption("La IA está leyendo los datos de las 5 empresas simultáneamente...")
+        
+        # Preparamos el texto con los datos de las 5 para enviárselo a Gemini
+        datos_para_ia = ""
+        for emp in top_seleccion:
+            datos_para_ia += f"- {emp['Empresa']} ({emp['Ticker']}): Precio ${emp['Precio']}, Objetivo ${emp['Objetivo']}, Potencial {emp['Potencial %']}%, Recom: {emp['Recomendación']}\n"
 
-        Dime en 3 puntos breves:
-        1. ¿Por qué crees que el mercado la ha castigado tanto (por qué está barata)?
-        2. ¿Es una oportunidad real o un "cuchillo cayendo" (riesgo de quiebra)?
-        3. Estrategia: ¿Entrarías ya o esperarías?
+        prompt_multi = f"""
+        Eres un analista senior de Wall Street. Tienes estas 5 oportunidades de inversión detectadas por nuestro algoritmo (ordenadas por potencial de subida):
+        
+        {datos_para_ia}
+
+        Por favor, analiza CADA UNA de las 5 de forma concisa.
+        Usa exactamente este formato para la respuesta (usa Markdown):
+
+        ### 1. [Nombre de la Empresa]
+        * 📉 **El Problema:** ¿Por qué está barata? (En 1 frase).
+        * 🚀 **La Oportunidad:** ¿Por qué subiría? (En 1 frase).
+        * 🚦 **Veredicto:** (Compra Agresiva / Compra Especulativa / Mantener).
+
+        ---
+        (Repite para las 5 empresas)
+        ---
+
+        🏆 **CONCLUSIÓN FINAL:** De estas 5, ¿cuál es tu favorita absoluta y por qué?
         """
         
         try:
-            with st.spinner("La IA está analizando los datos..."):
+            with st.spinner("Gemini está estudiando las 5 empresas..."):
                 analisis = client.models.generate_content(
-                    model="gemini-flash-latest",  # <--- USAMOS EL ALIAS "COMODÍN"
-                    contents=prompt_auto,
+                    model="gemini-flash-latest",  # Usamos el modelo que te funcionó
+                    contents=prompt_multi,
                 )
-                st.info(analisis.text)
+                # Usamos st.markdown para que se vean las negritas y los títulos bonitos
+                st.markdown(analisis.text)
+                
         except Exception as e:
-            st.error(f"Error: {e}")
-            st.warning("Si sale error 429, espera 20 segundos y vuelve a probar.")
+            st.error(f"Error al analizar el grupo: {e}")
+            st.warning("Prueba a esperar 30 segundos y volver a intentarlo.")
+
 
 
 
