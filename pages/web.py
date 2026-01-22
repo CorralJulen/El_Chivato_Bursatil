@@ -241,12 +241,14 @@ if st.button(f"🔍 Escanear {len(tickers_a_escanear)} empresas ahora"):
         try:
             with st.spinner("Consultando a Gemini..."):
                 analisis = client.models.generate_content(
-                    model="gemini-1.5-flash-002",
+                    model="gemini-1.5-flash-002",  # <--- VERSIÓN ESTABLE Y ESPECÍFICA
                     contents=prompt_auto,
                 )
                 st.info(analisis.text)
         except Exception as e:
-            st.error(f"Error detallado de la IA: {e}")
+            st.error(f"Error: {e}")
+            st.warning("Consejo: Si sale error 429, espera 1 minuto. Si sale 404, prueba con 'gemini-1.5-pro'.")
+
 
 
 
