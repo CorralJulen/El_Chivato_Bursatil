@@ -7,9 +7,6 @@ st.set_page_config(page_title="Buscador Universal de Bolsa", page_icon="📈")
 st.title("📈 Buscador Universal de Inversiones")
 st.markdown("Escribe el nombre de **cualquier empresa** y la IA analizará sus datos y su gráfico.")
 
-# ... (aquí arriba están tus imports y st.set_page_config) ...
-
-st.title("📈 Buscador Universal de Inversiones")
 
 # 2. CONFIGURACIÓN DE SEGURIDAD
 try:
@@ -252,6 +249,7 @@ if st.button(f"🔍 Escanear {len(tickers_a_escanear)} empresas ahora"):
         except Exception as e:
             st.error(f"Error: {e}")
             st.warning("Consejo: Si sale error 429, significa que has hecho muchas preguntas seguidas. Espera 1 minuto.")
+
 
 
 
