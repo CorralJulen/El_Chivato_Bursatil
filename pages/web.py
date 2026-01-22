@@ -219,7 +219,7 @@ if st.button(f"🔍 Escanear {len(tickers_a_escanear)} empresas ahora"):
         with st.expander("📊 Ver tabla completa de resultados"):
             st.dataframe(df_resultados)
 
-        # 3. LA IA ANALIZA AL GANADOR
+       # 3. LA IA ANALIZA AL GANADOR
         ganador = df_resultados[0]
         st.divider()
         st.write(f"🤖 **La IA está analizando la oportunidad Nº1: {ganador['Empresa']}...**")
@@ -245,7 +245,5 @@ if st.button(f"🔍 Escanear {len(tickers_a_escanear)} empresas ahora"):
                     contents=prompt_auto,
                 )
                 st.info(analisis.text)
-       except Exception as e:
+        except Exception as e:
             st.error(f"Error detallado de la IA: {e}")
-
-
