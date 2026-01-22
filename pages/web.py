@@ -22,21 +22,7 @@ if api_key:
     # Creas la conexión
     client = genai.Client(api_key=api_key)
 
-    
-    # --- CÓDIGO DE DIAGNÓSTICO ---
-    if st.sidebar.button("🛠️ Ver mis modelos disponibles"):
-        try:
-            modelos = client.models.list()
-            # Sacamos solo el nombre limpio (quitando 'models/')
-            lista = [m.name.replace("models/", "") for m in modelos]
-            st.sidebar.success("✅ Modelos activos para tu cuenta:")
-            st.sidebar.code("\n".join(lista)) # Los mostramos en una lista fácil de leer
-        except Exception as e:
-            st.sidebar.error(f"Error al listar: {e}")
-    # -----------------------------------------------------------------
-
-# ... (aquí sigue el resto de tu código: st.text_input, etc.) ...
-
+ 
 # 3. EL BUSCADOR
 nombre_empresa = st.text_input("Nombre de la empresa (Ej: Adidas, Ferrari, Inditex...):")
 
@@ -257,16 +243,16 @@ if st.button(f"🔍 Escanear {len(tickers_a_escanear)} empresas ahora"):
         """
         
         try:
-            with st.spinner("Consultando a Gemini..."):
+            with st.spinner("Gemini 2.0 analizando la oportunidad..."):
                 analisis = client.models.generate_content(
-                    model="gemini-1.0-pro",  # <--- INTENTO CON LA VERSIÓN 001
+                    model="gemini-2.0-flash",  # <--- ESTE ES EL NOMBRE CORRECTO DE TU LISTA
                     contents=prompt_auto,
                 )
                 st.info(analisis.text)
         except Exception as e:
-            st.error(f"Error de conexión con IA: {e}")
-            st.warning("⚠️ Si sale error 404: Prueba a cambiar el modelo a 'gemini-1.0-pro'.")
-            st.warning("⚠️ Si sale error 429: Has gastado tus peticiones del minuto. Espera un poco.")
+            st.error(f"Error: {e}")
+            st.warning("Consejo: Si sale error 429, significa que has hecho muchas preguntas seguidas. Espera 1 minuto.")
+
 
 
 
